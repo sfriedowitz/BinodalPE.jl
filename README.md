@@ -92,3 +92,52 @@ We refer the user to these publications for details on the implementation.
   journal = {Macromolecules}
 }
 ```
+
+2. Reversible charge association model
+```bibtex
+@article{Salehi2016,
+  doi = {10.1021/acs.macromol.6b01464},
+  url = {https://doi.org/10.1021/acs.macromol.6b01464},
+  year = {2016},
+  month = dec,
+  publisher = {American Chemical Society ({ACS})},
+  volume = {49},
+  number = {24},
+  pages = {9706--9719},
+  author = {Ali Salehi and Ronald G. Larson},
+  title = {A Molecular Thermodynamic Model of Complexation in Mixtures of Oppositely Charged Polyelectrolytes with Explicit Account of Charge Association/Dissociation},
+  journal = {Macromolecules}
+}
+```
+```bibtex
+@article{Friedowitz2018,
+  doi = {10.1063/1.5034454},
+  url = {https://doi.org/10.1063/1.5034454},
+  year = {2018},
+  month = oct,
+  publisher = {{AIP} Publishing},
+  volume = {149},
+  number = {16},
+  pages = {163335},
+  author = {Sean Friedowitz and Ali Salehi and Ronald G. Larson and Jian Qin},
+  title = {Role of electrostatic correlations in polyelectrolyte charge association},
+  journal = {The Journal of Chemical Physics}
+}
+```
+
+3. Use of package to compute phase diagrams
+```bibtex
+@article{Lou2019,
+  doi = {10.1021/acscentsci.8b00964},
+  url = {https://doi.org/10.1021/acscentsci.8b00964},
+  year = {2019},
+  month = feb,
+  publisher = {American Chemical Society ({ACS})},
+  volume = {5},
+  number = {3},
+  pages = {549--557},
+  author = {Junzhe Lou and Sean Friedowitz and Jian Qin and Yan Xia},
+  title = {Tunable Coacervation of Well-Defined Homologous Polyanions and Polycations by Local Polarity},
+  journal = {{ACS} Central Science}
+}
+```
