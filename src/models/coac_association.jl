@@ -14,7 +14,6 @@ These reversible reactions represent:
 References:
 * Salehi, A.; Larson, R. G. Macromolecules 2016, 49 (24), 9706–9719.
 * Friedowitz, S.; Salehi, A.; Larson, R. G.; Qin, J. J. Chem. Phys. 2018, 149 (16), 163335.
-]
 """
 mutable struct AssociationCoacervate{TC <: AbstractChainStructure} <: AbstractModel{TC}
     bulk     :: MVector{4,Float64}
