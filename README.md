@@ -70,3 +70,25 @@ BinodalState:
 * Binodal Newton stability w/ sub optimal initial guesses
 * Stable spinodal/critical point methods
 * Transfer formulas into a type-based method for each interaction (modular interaction design)
+
+## Publications
+
+A number of publications describe the methods and theory implemented in this package.
+We refer the user to these publications for details on the implementation.
+
+1. Treatment of electrostatics
+```bibtex
+@article{Qin2016,
+  doi = {10.1021/acs.macromol.6b02113},
+  url = {https://doi.org/10.1021/acs.macromol.6b02113},
+  year = {2016},
+  month = nov,
+  publisher = {American Chemical Society ({ACS})},
+  volume = {49},
+  number = {22},
+  pages = {8789--8800},
+  author = {Jian Qin and Juan J. de Pablo},
+  title = {Criticality and Connectivity in Macromolecular Charge Complexation},
+  journal = {Macromolecules}
+}
+```

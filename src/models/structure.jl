@@ -1,7 +1,10 @@
  """
 	abstract type AbstractChainStructure
 
-The representation of chain structure for use in defining the electrostatic free energy for a model.
+An abstract representation of the polymer chain structure within a model.
+A general random phase approximation expression is applied for the electrostatic free energy,
+where a model's chain structure controls the polymer structure factor
+used in the calculation.
 """
 abstract type AbstractChainStructure end
 
