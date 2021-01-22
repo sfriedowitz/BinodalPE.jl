@@ -1,0 +1,2 @@
+# Example of a `.gitattributes` file which removes `.ipynb` files from Linguist detection:
+*.ipynb linguist-detectable=false
