@@ -45,7 +45,7 @@ export free_energy, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressu
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
 
 # Some utilities
-export gcoil, grod, gworm, gchain
+export gcoil, grod, gworm, gchain, gamma2
 export tophi, toconc, neutralbulk, differencebulk, asypolyion
 
 #==============================================================================#

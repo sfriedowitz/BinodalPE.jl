@@ -74,7 +74,7 @@ BinodalState:
 ## Publications
 
 A number of publications describe the methods and theory implemented in this package.
-We refer the user to these publications for details on the implementation.
+We refer the user to these publications for details on model implementation.
 
 1. Treatment of electrostatics
 ```bibtex
