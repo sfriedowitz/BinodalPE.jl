@@ -44,7 +44,7 @@ end
 #==============================================================================#
 
 bndlsolve(res::BinodalResults, model::AbstractModel; kwargs...) = bndlsolve(res.x, model; kwargs...)
-bndlsolve(state::BinodalState, model::AbstractModel; kwargs...) = bndlsolve(bndlx(state, model), model; kwargs...)
+bndlsolve(state::BinodalState, model::AbstractModel; kwargs...) = bndlsolve(bndlsolvex(state, model), model; kwargs...)
 
 """
     bndlsolve(init, model; kwargs...)
@@ -171,7 +171,7 @@ function bndlminimize(init::AbstractVector, model::AbstractModel;
         end
 
         if show_trace
-            @printf("Minimization cycle (%d)  -- f(x) = %.5g\n", i, fmin)
+            @printf("Minimization cycle (%d)  -- f(x) = %.5g\n", c, fmin)
         end
 
         state = bndlstate(bndlunscale(x, model), model)
@@ -182,6 +182,8 @@ function bndlminimize(init::AbstractVector, model::AbstractModel;
 
             swap!(state)
             x = bndlminx(state, model)
+            bndlscale!(x, model)
+
             if cycle_min == c
                 xmin = copy(x)
             end

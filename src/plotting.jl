@@ -6,6 +6,7 @@
     map = x -> [x[1], x[2]], 
     primary = true, 
     tie = false,
+    tieskip = 1,
     bulk = false,
     interp = false, 
     composition = :auto,
@@ -124,7 +125,8 @@
             linewidth := 1.5
             marker := false
 
-            for i = 1:mid
+            tieskip = floor(Int, max(tieskip, 1))
+            for i = 1:tieskip:mid
                 tl = transpose([[lx[i], ly[i]] [rx[i], ry[i]]])
                 @series begin
                     seriestype := :line
