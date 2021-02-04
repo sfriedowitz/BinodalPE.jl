@@ -88,7 +88,7 @@ function varinit(phi, model::SinglePolyion)
     dg = model.dg
     b = model.b
 
-    muel = muel_assoc(phi, [0.5, 2.5], model)
+    muel = muel_association(phi, [0.5, 2.5], model)
     kA = exp(-dg - muel + 1)
 
     if phiP < 1e-10 # To avoid roundoff error
@@ -119,7 +119,7 @@ function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion) where TF
     phiPF = phiP - alpha*phiA*wP/wA
     sig = 1 - alpha
 
-    muel = muel_assoc(phi, [alpha], model)
+    muel = muel_association(phi, [alpha], model)
     F[1] = log(alpha/(1-alpha)/phiPF) + dg + muel - 1
 
     return nothing
@@ -136,7 +136,7 @@ function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion{AdaptiveChain
     phiPF = phiP - alpha*phiA*wP/wA
     sig = 1 - alpha
 
-    muel = muel_assoc(phi, vars, model)
+    muel = muel_association(phi, vars, model)
     dftot = dftot_adaptive(phi, vars, model)
 
     F[1] = log(alpha/(1-alpha)/phiPF) + dg + muel - 1

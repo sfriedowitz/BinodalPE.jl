@@ -28,7 +28,8 @@ import SpecialFunctions: sinint
 #==============================================================================#
 
 # Types
-export AbstractChainStructure, PointLike, ExtendedPoint, GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule
+export AbstractChainStructure, PointLike, ExtendedPoint, SmearedPoint
+export GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule
 export AbstractModel, AsymmetricCoacervateModel
 export SinglePolyion, SymmetricCoacervate, AsymmetricCoacervate, AssociationCoacervate, SelfComplimentaryCoacervate
 

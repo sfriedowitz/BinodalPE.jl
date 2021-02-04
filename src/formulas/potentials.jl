@@ -2,11 +2,11 @@
 # Single polyion system
 #==============================================================================#
 
-muel_assoc(phi, vars, model::SinglePolyion{PointLike}) = model.lB*kbar(phi, vars, model)
+muel_association(phi, vars, model::SinglePolyion{PointLike}) = model.lB*kbar(phi, vars, model)
 
-muel_assoc(phi, vars, model::SinglePolyion{ExtendedPoint}) = model.lB*kbar(phi, vars, model)/(1 + kbar(phi, vars, model))
+muel_association(phi, vars, model::SinglePolyion{ExtendedPoint}) = model.lB*kbar(phi, vars, model)/(1 + kbar(phi, vars, model))
 
-function muel_assoc(phi, vars, model::SinglePolyion)
+function muel_association(phi, vars, model::SinglePolyion)
     phiA, phiP, phiM = phi
     wA, wP, wM = model.omega
     np = model.np
@@ -32,7 +32,7 @@ end
 # Fully association coacervate
 #==============================================================================#
 
-function muel_assoc(phi, vars, model::AssociationCoacervate)
+function muel_association(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
     nA, nC = model.np
@@ -61,14 +61,14 @@ function muel_assoc(phi, vars, model::AssociationCoacervate)
     return pots
 end
 
-function muel_assoc(phi, vars, model::AssociationCoacervate{PointLike})
+function muel_association(phi, vars, model::AssociationCoacervate{PointLike})
     lB = model.lB
     kb = kbar(phi, vars, model)
     mu = lB*kb
     return @SVector [mu, mu, mu]
 end
 
-function muel_assoc(phi, vars, model::AssociationCoacervate{ExtendedPoint})
+function muel_association(phi, vars, model::AssociationCoacervate{ExtendedPoint})
     lB = model.lB
     kb = kbar(phi, vars, model)
     mu = (lB*kb)/(1 + kb)

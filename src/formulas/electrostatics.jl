@@ -27,6 +27,7 @@ end
 # Single polyion and symmetric coacervate
 
 const OneChainModel{TC} = Union{SinglePolyion{TC}, SymmetricCoacervate{TC}}
+gchain(q, vars, model::OneChainModel{SmearedPoint}) = 1.0
 gchain(q, vars, model::OneChainModel{SphericalGlobule}) = gsphere(q*((3/(4pi))*model.omega[1]*model.np)^(1/3))
 gchain(q, vars, model::OneChainModel{GaussianCoil}) = gcoil(q^2*(model.np*model.b^2/6.0)) 
 gchain(q, vars, model::OneChainModel{RodLike}) = grod(q*model.np*model.b) 
@@ -34,6 +35,8 @@ gchain(q, vars, model::OneChainModel{WormLike}) = gworm(q, model.lp, model.np, m
 gchain(q, vars, model::OneChainModel{AdaptiveChain}) = gworm(q, vars[end], model.np, model.b)
 
 # Asymmetric coacervate models
+
+gchain(q, vars, model::AsymmetricCoacervateModel{SmearedPoint}) = (1.0, 1.0)
 
 function gchain(q, vars, model::AsymmetricCoacervateModel{SphericalGlobule})
     wA, wC = model.omega[1], model.omega[2]

@@ -111,7 +111,7 @@ function varinit(phi, model::AssociationCoacervate)
     bA, bC = model.b
     nA, nC = model.np
 
-    mu_ap, mu_cm, mu_ip = muel_assoc(phi, [0.5, 0.5, 0.5, 0.5, bA, bC], model)
+    mu_ap, mu_cm, mu_ip = muel_association(phi, [0.5, 0.5, 0.5, 0.5, bA, bC], model)
     kAP = exp(-dgAP - mu_ap + 1)
     kCM = exp(-dgCM - mu_cm + 1)
     kIP = exp(-dgIP - mu_ip + 1)
@@ -203,7 +203,7 @@ function varf!(F, x, phi, model::AssociationCoacervate)
     sigC = (1-alphaCM)*(1-betaC)
     
     # Electrostatic exchange potentials
-    mu_ap, mu_cm, mu_bc = muel_assoc(phi, vars, model)
+    mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     
     F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
     F[2] = log(alphaCM/(sigC*phiMF)) + dgCM + mu_cm - 1
@@ -227,7 +227,7 @@ function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
     phiMF = phiM - alphaCM*phiC*wM/wC
     
     # Electrostatic exchange potentials
-    mu_ap, mu_cm, mu_bc = muel_assoc(phi, vars, model)
+    mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     dfA, dfC = dftot_adaptive(phi, vars, model)
     
     F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
