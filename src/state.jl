@@ -125,6 +125,8 @@ end
 
 #==============================================================================#
 
+Base.push!(bndl::BinodalData, state::BinodalState) = push!(bndl.states, state)
+
 add_state!(bndl::BinodalData, state::BinodalState) = push!(bndl.states, copy(state))
 
 function tophi(bndl::BinodalData, omega::AbstractArray{<:Real})

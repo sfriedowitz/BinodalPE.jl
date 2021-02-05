@@ -36,7 +36,7 @@ julia> mutotal(phi, model)
  -0.6656002270678112
  -2.9963284857396184
  
-julia> set_bulk(model, [0.01, 0.072])
+julia> set_bulk!(model, [0.01, 0.072])
 
 julia> init = [0.0005, 0.0725, 0.04056618971, 0.0725, 0.06];
  

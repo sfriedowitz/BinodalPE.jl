@@ -17,7 +17,7 @@
 	for (i, model) in enumerate(models)
 		@test newstate(model).nu == 1.0
 
-		set_bulk(model, phis[i])
+		set_bulk!(model, phis[i])
 		@test model.bulk == phis[i]
 	end
 	

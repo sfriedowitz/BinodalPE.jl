@@ -41,7 +41,7 @@ export bndlg, bndlproblem, bndlminimize
 export savebndl, readbndl, add_state!
 
 # Model methods
-export swap, swap!, valid, set_bulk, newstate
+export swap, swap!, valid, set_bulk!, newstate
 export free_energy, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, mupressure
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
 

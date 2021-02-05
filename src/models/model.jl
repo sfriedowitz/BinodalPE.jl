@@ -21,7 +21,7 @@ accounting for charge neutrality and the presence of counterions from the polyme
 """
 neutralbulk(phi, model::AbstractModel) = notimpl("neutralbulk", typeof(model))
 
-function set_bulk(model::AbstractModel, bulk)
+function set_bulk!(model::AbstractModel, bulk)
     # Some error checking
     if length(bulk) != length(model.bulk)
         error("Error: Invalid number of bulk components, requires $(length(model.bulk)).")
