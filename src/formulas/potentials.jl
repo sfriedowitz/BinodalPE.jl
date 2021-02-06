@@ -16,10 +16,11 @@ function muel_association(phi, vars, model::SinglePolyion)
     # Derived parameters
     alpha = vars[1]
     sig = 1 - alpha
+    pol = chains(model, vars)
 
     # Integration function
     function integrand(q)
-        gA = gchain(q, vars, model)
+        gA = gchain(pol, q)
         smA, smP, smM = gamq.(q, model.smear)
         -(lB/pi)*(smP^2 + 2*np*sig*smA^2*gA)/(1 + ktilde2(q, phi, vars, model)/q^2)
     end
@@ -44,9 +45,11 @@ function muel_association(phi, vars, model::AssociationCoacervate)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
 
+    apol, cpol = chains(model, vars)
+
     # Integration functions
     function integrand(q)
-        gA, gC = gchain(q, vars, model)
+        gA, gC = gchain(apol, q), gchain(cpol, q)
         smA, smC, smP, smM = gamq.(q, model.smear)
 
         num_ap = -(lB/pi)*(smP^2 + 2*nA*sigA*smA^2*gA)

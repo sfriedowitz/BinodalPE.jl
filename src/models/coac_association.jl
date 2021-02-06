@@ -142,8 +142,8 @@ function varinit(phi, model::AssociationCoacervate)
     end
 
     # # Initial clamps
-    alphaAP0 = clamp(alphaAP0, 1e-10, 0.99)
-    alphaCM0 = clamp(alphaCM0, 1e-10, 0.99)
+    alphaAP0 = clamp(alphaAP0, 1e-10, 0.95)
+    alphaCM0 = clamp(alphaCM0, 1e-10, 0.95)
 
     # Ion pairing extents
     betaA = (1-alphaAP0)*phiA/wA
@@ -170,8 +170,8 @@ function varinit(phi, model::AssociationCoacervate)
         betaC0 = beta * betaA / betaC
     end
 
-    betaA0 = clamp(betaA0, 1e-8, 0.99)
-    betaC0 = clamp(betaC0, 1e-8, 0.99)
+    betaA0 = clamp(betaA0, 1e-8, 0.95)
+    betaC0 = clamp(betaC0, 1e-8, 0.95)
 
     init = [alphaAP0, alphaCM0, betaA0, betaC0]
     for i in eachindex(init)

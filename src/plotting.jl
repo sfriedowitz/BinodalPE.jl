@@ -40,6 +40,7 @@
         seriestype --> :path
         @series begin
             primary := true
+            minorticks := false
             x, y, z
         end
 

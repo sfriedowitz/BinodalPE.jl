@@ -3,17 +3,17 @@
 #==============================================================================#
 
 """
-    AsymmetricCoacervateModel{TC <: AbstractChainStructure} = 
+    TwoChainModel{TC <: AbstractChainStructure} = 
         Union{AsymmetricCoacervate{TC}, AssociationCoacervate{TC}, SelfComplimentaryCoacervate{TC}}
 
 Union type for models representing a standard coacervate model with treatment of A, C, (+), and (-) components.
 
 Binodal variable format: [A1, C1, (+)1, (-)1, A2, C2, (+)2, (-)2, ν, Ψ]
 """
-const AsymmetricCoacervateModel{TC <: AbstractChainStructure} = 
+const TwoChainModel{TC <: AbstractChainStructure} = 
     Union{AsymmetricCoacervate{TC}, AssociationCoacervate{TC}, SelfComplimentaryCoacervate{TC}}
 
-function neutralbulk(phi, model::AsymmetricCoacervateModel)
+function neutralbulk(phi, model::TwoChainModel)
     sigA0, sigC0 = model.sig
     wA, wC, wP, wM = model.omega
     wS = (wP+wM)/2.0
@@ -42,11 +42,25 @@ function differencebulk(phi, model)
     end
 end
 
-bndlminx(state::BinodalState, model::AsymmetricCoacervateModel) = [state.dense[1], state.dense[2], 1-sum(state.dense), state.nu]
+function chains(model::TwoChainModel{TC}) where TC
+    achain = ChainStructure{TC}(model.np[1], model.omega[1], model.b[1], model.lp[1])
+    cchain = ChainStructure{TC}(model.np[2], model.omega[2], model.b[2], model.lp[2])
+    return (achain, cchain)
+end
 
-bndlsolvex(state::BinodalState, model::AsymmetricCoacervateModel) = [state.sup..., state.dense..., state.nu, get(state.props, :psi, 0.0)]
+function chains(model::TwoChainModel{AdaptiveChain}, vars)
+    achain = ChainStructure{AdaptiveChain}(model.np[1], model.omega[1], model.b[1], vars[end-1])
+    cchain = ChainStructure{AdaptiveChain}(model.np[2], model.omega[2], model.b[2], vars[end])
+    return (achain, cchain)
+end
 
-function bndlscale!(x, model::AsymmetricCoacervateModel)
+#==============================================================================#
+
+bndlminx(state::BinodalState, model::TwoChainModel) = [state.dense[1], state.dense[2], 1-sum(state.dense), state.nu]
+
+bndlsolvex(state::BinodalState, model::TwoChainModel) = [state.sup..., state.dense..., state.nu, get(state.props, :psi, 0.0)]
+
+function bndlscale!(x, model::TwoChainModel)
     if length(x) == 4
         logscale!(x)
     elseif length(x) == 10
@@ -55,7 +69,7 @@ function bndlscale!(x, model::AsymmetricCoacervateModel)
     return nothing
 end
 
-function bndlunscale!(x, model::AsymmetricCoacervateModel)
+function bndlunscale!(x, model::TwoChainModel)
     if length(x) == 4
         logunscale!(x)
     elseif length(x) == 10
@@ -64,7 +78,7 @@ function bndlunscale!(x, model::AsymmetricCoacervateModel)
     return nothing
 end
 
-function bndlstate(x, model::AsymmetricCoacervateModel)
+function bndlstate(x, model::TwoChainModel)
     @assert length(x) == 4 || length(x) == 10 "Invalid number of parameters for binodal state. Requires (4, 10) for $(typeof(model))."
 
     if length(x) == 4
@@ -102,13 +116,13 @@ function bndlstate(x, model::AsymmetricCoacervateModel)
         dense = @SVector [phiAC, phiCC, phiPC, phiMC]
 
         state = BinodalState(bulk, sup, dense, nu)
-        state.props[:psi] = x[10]
+        state.props[:psiG] = x[10]
 
         return state
     end
 end
 
-function bndlf!(F, xs, model::AsymmetricCoacervateModel; scaled::Bool = false)
+function bndlf!(F, xs, model::TwoChainModel; scaled::Bool = false)
     # Scale coordinates
     x = scaled ? bndlunscale(xs, model) : xs
 
@@ -140,7 +154,7 @@ function bndlf!(F, xs, model::AsymmetricCoacervateModel; scaled::Bool = false)
     return nothing
 end
 
-function bndlj!(J, xs, model::AsymmetricCoacervateModel; scaled::Bool = false)
+function bndlj!(J, xs, model::TwoChainModel; scaled::Bool = false)
     # Scale coordinates
     x = scaled ? bndlunscale(xs, model) : xs
 

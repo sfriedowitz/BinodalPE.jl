@@ -127,6 +127,13 @@ end
 
 Base.push!(bndl::BinodalData, state::BinodalState) = push!(bndl.states, state)
 
+function Base.push!(bndl::BinodalData, other::BinodalData)
+    for state in other
+        push!(bndl, state)
+    end
+    return nothing
+end
+
 add_state!(bndl::BinodalData, state::BinodalState) = push!(bndl.states, copy(state))
 
 function tophi(bndl::BinodalData, omega::AbstractArray{<:Real})
@@ -191,7 +198,11 @@ function readbndl(fname)
         
         state = BinodalState(bulk, sup, dense, nu)
         for entry in props
-            state.props[Symbol(entry[1])] = float(entry[2])
+            if typeof(entry[2]) <: AbstractArray
+                state.props[Symbol(entry[1])] = Float64.(entry[2])
+            elseif typeof(entry[2]) <: Real
+                state.props[Symbol(entry[1])] = Float64(entry[2])
+            end
         end
 
         add_state!(bndl, state)

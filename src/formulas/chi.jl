@@ -8,7 +8,7 @@ function fchi(phi, model::Union{SinglePolyion,SymmetricCoacervate})
 	return model.chi * phiP * phiW
 end
 
-function fchi(phi, model::AsymmetricCoacervateModel)
+function fchi(phi, model::TwoChainModel)
 	phiA, phiC = phi[1], phi[2]
 	phiW = 1-sum(phi)
 	chiAW, chiCW, chiAC = model.chi

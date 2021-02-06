@@ -40,6 +40,10 @@ end
 
 #==============================================================================#
 
+chains(model::SinglePolyion{TC}) where TC = ChainStructure{TC}(model.np, model.omega[1], model.b, model.lp)
+
+chains(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, model.omega[1], model.b, vars[2])
+
 function neutralbulk(phi, model::SinglePolyion)
     sig = model.sig
     wA, wP, wM = model.omega

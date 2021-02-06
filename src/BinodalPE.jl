@@ -28,9 +28,9 @@ import SpecialFunctions: sinint
 #==============================================================================#
 
 # Types
-export AbstractChainStructure, PointLike, ExtendedPoint, SmearedPoint
-export GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule
-export AbstractModel, AsymmetricCoacervateModel
+export AbstractChainStructure, ChainStructure
+export PointLike, ExtendedPoint, SmearedPoint, GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule
+export AbstractModel, OneChainModel, TwoChainModel
 export SinglePolyion, SymmetricCoacervate, AsymmetricCoacervate, AssociationCoacervate, SelfComplimentaryCoacervate
 
 # Solve binodals
@@ -46,7 +46,7 @@ export free_energy, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressu
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
 
 # Some utilities
-export gcoil, grod, gworm, gchain, gamma2
+export chains, gchain, gcoil, grod, gworm, gsphere, gamma2
 export tophi, toconc, neutralbulk, differencebulk, asypolyion
 
 #==============================================================================#
@@ -74,7 +74,7 @@ include("models/coac_symmetric.jl")
 include("models/coac_asymmetric.jl")
 include("models/coac_association.jl")
 include("models/coac_selfcomp.jl")
-include("models/asymmetric.jl")
+include("models/twochain.jl")
 
 # Formulas
 include("formulas/translational.jl")

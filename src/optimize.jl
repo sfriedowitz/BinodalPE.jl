@@ -76,6 +76,7 @@ function bndlsolve(init::AbstractVector, model::AbstractModel;
     scale::Bool = true,
     show_trace::Bool = false,
     extended_trace::Bool = false,
+    autodiff::Symbol = :auto,
     linesearch = LineSearches.Static()
 ) where {TF <: Real}
 
@@ -87,11 +88,15 @@ function bndlsolve(init::AbstractVector, model::AbstractModel;
     f!(F, x) = bndlf!(F, x, model; scaled = scale)
     j!(J, x) = bndlj!(J, x, model; scaled = scale)
     fj!(F, J, x) = bndlfj!(F, J, x, model; scaled = scale)
-    df = OnceDifferentiable(f!, j!, fj!, x0, F0)
+    if autodiff == :finite
+        df = OnceDifferentiable(f!, x0, F0, autodiff = autodiff)
+    else
+        df = OnceDifferentiable(f!, j!, fj!, x0, F0)
+    end
 
     # Internal solver routine after setup
-    #sol = _newton_solve(df, x0, iterations, xtol, ftol, rlxn, pmax, false, show_trace, extended_trace, linesearch)
-    sol = nlsolve(df, x0, method = :trust_region, iterations = iterations, ftol = ftol, xtol = xtol, show_trace = show_trace, extended_trace = extended_trace, linesearch = linesearch)
+    sol = _newton_solve(df, x0, iterations, xtol, ftol, rlxn, pmax, false, show_trace, extended_trace, linesearch)
+    #sol = nlsolve(df, x0, method = :trust_region, iterations = iterations, ftol = ftol, xtol = xtol, show_trace = show_trace, extended_trace = extended_trace, linesearch = linesearch)
 
     # State and results
     xsol = bndlunscale(copy(sol.zero), model)
