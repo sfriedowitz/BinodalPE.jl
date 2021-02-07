@@ -33,11 +33,11 @@ end
 
 #==============================================================================#
 
-function free_energy(phi, model::AsymmetricCoacervate)
+function ftotal(phi, model::AsymmetricCoacervate)
     return ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, model)
 end
 
-function free_energy(phi, model::AsymmetricCoacervate{AdaptiveChain})
+function ftotal(phi, model::AsymmetricCoacervate{AdaptiveChain})
     vars = varsolve(phi, model; model.vargs...)
     return ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, vars, model)
 end

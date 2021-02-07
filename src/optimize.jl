@@ -148,7 +148,7 @@ function bndlminimize(init::AbstractVector, model::AbstractModel;
     bndlscale!(x, model)
 
     # Setup objective function
-    fb = free_energy(model.bulk, model)
+    fb = ftotal(model.bulk, model)
     fx = x -> bndlg(bndlunscale(x, model), model; fbulk = fb)
     options = Optim.Options(f_tol = ftol, iterations = iterations)
 

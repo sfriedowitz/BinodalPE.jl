@@ -28,7 +28,7 @@ SymmetricCoacervate{GaussianCoil}(bulk = [0.0, 0.0])
 
 julia> phi = [0.01, 0.025];
 
-julia> free_energy(phi, model)
+julia> ftotal(phi, model)
 -0.1017901482330647
 
 julia> mutotal(phi, model)

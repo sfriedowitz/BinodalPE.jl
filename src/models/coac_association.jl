@@ -47,7 +47,7 @@ end
 
 #==============================================================================#
 
-function free_energy(phi, model::AssociationCoacervate)
+function ftotal(phi, model::AssociationCoacervate)
     # Solve for association fractions
     assoc = varinit(phi, model)
     try

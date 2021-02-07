@@ -32,7 +32,7 @@ end
 
 #==============================================================================#
 
-function free_energy(phi, model::SelfComplimentaryCoacervate)
+function ftotal(phi, model::SelfComplimentaryCoacervate)
     # Solve for all assoc vars (including self-comp term)
     theta = selfcompsolve(phi, model)
     assoc = varinit(phi, model.assoc)

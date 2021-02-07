@@ -66,6 +66,7 @@ bndlunscale!(x, model::AbstractModel) = notimpl("bndlunscale!", typeof(model))
 newstate(model::AbstractModel) = BinodalState(model.bulk)
 
 chains(model::AbstractModel) = notimpl("chains(model)", typeof(model))
+
 chains(model::AbstractModel, vars) = chains(model)
 
 bndlminx(state::BinodalState, model::AbstractModel) = notimpl("bndlminx", typeof(model))
@@ -80,13 +81,13 @@ bndlj!(J, x, model::AbstractModel) = notimpl("bndlj!", typeof(model))
 
 function bndlg(x, model::AbstractModel; fbulk::Real = NaN)
     state = bndlstate(x, model)
-    fb = !isnan(fbulk) ? fbulk : free_energy(state.bulk, model)
+    fb = !isnan(fbulk) ? fbulk : ftotal(state.bulk, model)
 
     if !valid(state)
         return 1e10*rand()
     else
-        fs = free_energy(state.sup, model)
-        fc = free_energy(state.dense, model)
+        fs = ftotal(state.sup, model)
+        fc = ftotal(state.dense, model)
         return ((1-state.nu)*fs + state.nu*fc - fb)/abs(fb)
     end
 end
@@ -98,11 +99,11 @@ bndlg(state::BinodalState, model::AbstractModel) = bndlg(bndlminx(state, model),
 #==============================================================================#
 
 """
-    free_energy(phi, model)
+    ftotal(phi, model)
 
 Return the total solution free energy for a model at a given composition.
 """
-free_energy(phi, model::AbstractModel) = notimpl("free_energy", typeof(model))
+ftotal(phi, model::AbstractModel) = notimpl("ftotal", typeof(model))
 
 ftranslational(phi, model::AbstractModel) = notimpl("ftranslational", typeof(model))
 
@@ -113,13 +114,13 @@ end
 
 function fexcess(phi, model::AbstractModel)
     phiW = 1-sum(phi)
-    ftot = free_energy(phi, model)
+    ftot = ftotal(phi, model)
     return ftot - ftranslational(phi, model) + phiW*log(phiW)
 end
 
 function f2total(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))
     # Without scaling procedure
-    gx = x -> free_energy(x, model)
+    gx = x -> ftotal(x, model)
     cfg = ForwardDiff.HessianConfig(gx, phi, chunk)
     return ForwardDiff.hessian(gx, phi, cfg)
 end
@@ -134,13 +135,13 @@ end
 
 function mutotal(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))
     # # Without scaling procedure
-    # gx = x -> free_energy(x, model)
+    # gx = x -> ftotal(x, model)
     # cfg = ForwardDiff.GradientConfig(gx, phi, chunk)
     # return ForwardDiff.gradient(gx, phi, cfg)
 
     # With variable scaling
     xs = logscale(phi)
-    fx = x -> free_energy(logunscale(x), model)
+    fx = x -> ftotal(logunscale(x), model)
 
     cfg = ForwardDiff.GradientConfig(fx, xs, chunk)
     g = ForwardDiff.gradient(fx, xs, cfg)
@@ -163,11 +164,11 @@ end
 
 function pressure(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))
     mu = mutotal(phi, model; chunk = chunk)
-    return dot(mu, phi) - free_energy(phi, model)
+    return dot(mu, phi) - ftotal(phi, model)
 end
 
 function mupressure(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))
     mu = mutotal(phi, model; chunk = chunk)
-    p = dot(mu, phi) - free_energy(phi, model)
+    p = dot(mu, phi) - ftotal(phi, model)
     return (mu, p)
 end

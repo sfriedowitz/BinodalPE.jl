@@ -19,6 +19,10 @@ mutable struct SinglePolyion{TC <: AbstractChainStructure} <: AbstractModel{TC}
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
+
+    # Updating terms
+    structures :: SVector
+
     vargs  :: Dict{Symbol,Any}
 end
 
@@ -57,7 +61,7 @@ function ftranslational(phi, model::SinglePolyion)
     return ftranslational(phi, assoc, model)
 end
 
-function free_energy(phi, model::SinglePolyion)
+function ftotal(phi, model::SinglePolyion)
     assoc = varsolve(phi, model; model.vargs...)
 
     ftot = ftranslational(phi, assoc, model)

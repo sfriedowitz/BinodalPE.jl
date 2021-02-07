@@ -37,9 +37,9 @@ chains(model::SymmetricCoacervate{TC}) where TC = ChainStructure{TC}(model.np, m
 
 chains(model::SymmetricCoacervate{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, model.omega[1], model.b, vars[1])
 
-free_energy(phi, model::SymmetricCoacervate) = ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, model)
+ftotal(phi, model::SymmetricCoacervate) = ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, model)
 
-function free_energy(phi, model::SymmetricCoacervate{AdaptiveChain})
+function ftotal(phi, model::SymmetricCoacervate{AdaptiveChain})
     vars = varsolve(phi, model; model.vargs...)
     ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, vars, model)
 end
