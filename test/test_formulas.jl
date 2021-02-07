@@ -7,7 +7,6 @@
 
 	@test vars[1] ≈ 0.8853291946844383
 	@test ftotal(phi, model) ≈ -0.11991340426951363
-	@test BinodalPE.ftranslational(phi, vars, model) ≈ -0.08411000980814339
 	@test BinodalPE.felectrostatic(phi, vars, model) ≈ 0.012024772398863454
 
 	# Test symmetric coacervate formulas

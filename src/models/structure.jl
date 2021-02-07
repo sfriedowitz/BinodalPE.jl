@@ -34,6 +34,6 @@ gchain(chain::ChainStructure{SphericalGlobule}, q) = gsphere(q * ((3/(4pi)) * ch
 
 gchain(chain::ChainStructure{GaussianCoil}, q) = gcoil(q^2 * (chain.np * chain.b^2 / 6.0))
 
-gchain(chain::ChainStructure{RodLike}, q) = gcoil(q * chain.np * chain.b)
+gchain(chain::ChainStructure{RodLike}, q) = grod(q * chain.np * chain.b)
 
-gchain(chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}, q) = gworm(q, chain.lp, chain.np, chain.b)
+gchain(chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}, q) = gworm(q, chain.np, chain.lp, chain.b)

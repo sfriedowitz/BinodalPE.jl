@@ -46,7 +46,7 @@ export ftotal, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, m
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
 
 # Some utilities
-export chains, gchain, gcoil, grod, gworm, gsphere, gamma2
+export chain_structures, gchain, gcoil, grod, gworm, gsphere, gamma2
 export tophi, toconc, neutralbulk, differencebulk, asypolyion
 
 #==============================================================================#

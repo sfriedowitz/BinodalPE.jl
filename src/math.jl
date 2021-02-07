@@ -35,7 +35,7 @@ end
 
 grodhq(q) = pi / q
 
-function gworm(q, lp, np, b = 1.0)
+function gworm(q, np, lp, b = 1.0)
     coil = exp(-q*lp/2.0) / (1.0 + q^2*np*b*lp/6.0)
     rod = (1 - exp(-q*lp/2.0)) / (1.0 + q*np*b/pi)
     return coil + rod    

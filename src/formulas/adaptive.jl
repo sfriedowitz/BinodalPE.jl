@@ -42,14 +42,14 @@ function dfint_adaptive(phi, vars, model::SinglePolyion{AdaptiveChain})
     phiPF = phiP - alpha*phiA*wP/wA
 
     ktilde2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
-        phiA*np*sig^2*gamq(q,aA)^2*gworm(q,lp,np,b)/wA
+        phiA*np*sig^2*gamq(q,aA)^2*gworm(q,np,lp,b)/wA
     )
-    spol(q) = sig^2 * np^2 * gamq(q,aA)^2 * gworm(q,lp,np,b)
+    spol(q) = sig^2 * np^2 * gamq(q,aA)^2 * gworm(q,np,lp,b)
     gscreen(q) = (4*pi*lB) / (q^2 + ktilde2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
-    dgscreen(q) = -(4*pi*lB)^2 * sig^2 * phiA*np/wA * gamq(q,aA)^2 * dgworm(q,lp,np,b) / (q^2 + ktilde2(q))^2
-    dspol(q) = sig^2 * np^2 * gamq(q,aA)^2 * dgworm(q,lp,np,b)
+    dgscreen(q) = -(4*pi*lB)^2 * sig^2 * phiA*np/wA * gamq(q,aA)^2 * dgworm(q,np,lp,b) / (q^2 + ktilde2(q))^2
+    dspol(q) = sig^2 * np^2 * gamq(q,aA)^2 * dgworm(q,np,lp,b)
 
     # From ZGW article on single-chain free energy minimization
     # dfint/dl = (1/4pi^2)∫dq q^2 d(G * S)/dl = (1/4pi^2)∫dq q^2[(dG/dL)*S + (dS/dL)*G]
@@ -91,8 +91,8 @@ function fint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     b = model.b
     lB = model.lB
 
-    ktilde2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,lp,np,b)/wP)
-    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,lp,np,b)
+    ktilde2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,np,lp,b)/wP)
+    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,np,lp,b)
     integrand(q) = (lB/pi) * q^2 * spol(q) / (q^2 + ktilde2(q))
 
     fint, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER)
@@ -129,13 +129,13 @@ function dfint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     b = model.b
     lB = model.lB
 
-    ktilde2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,lp,np,b)/wP)
-    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,lp,np,b)
+    ktilde2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,np,lp,b)/wP)
+    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,np,lp,b)
     gscreen(q) = (4*pi*lB) / (q^2 + ktilde2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
-    dgscreen(q) = -sig^2 * phiP*np/wP * gamq(q,aP)^2 * dgworm(q,lp,np,b) * gscreen(q)^2
-    dspol(q) = sig^2 * np^2 * gamq(q,aP)^2 * dgworm(q,lp,np,b)
+    dgscreen(q) = -sig^2 * phiP*np/wP * gamq(q,aP)^2 * dgworm(q,np,lp,b) * gscreen(q)^2
+    dspol(q) = sig^2 * np^2 * gamq(q,aP)^2 * dgworm(q,np,lp,b)
 
     # From ZGW article on single-chain free energy minimization
     # dfint/dl = (1/4pi^2)∫dq q^2 d(G * S)/dl = (1/4pi^2)∫dq q^2[(dG/dL)*S + (dS/dL)*G]

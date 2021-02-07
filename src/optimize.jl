@@ -71,7 +71,7 @@ function bndlsolve(init::AbstractVector, model::AbstractModel;
     iterations::Integer = 50,
     xtol::Real = 0.0,
     ftol::Real = 1e-10,
-    rlxn::Real = 0.9,
+    rlxn::Real = 1.0,
     pmax::Real = Inf,
     scale::Bool = true,
     show_trace::Bool = false,
