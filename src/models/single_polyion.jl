@@ -19,10 +19,6 @@ mutable struct SinglePolyion{TC <: AbstractChainStructure} <: AbstractModel{TC}
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
-
-    # Updating terms
-    structures :: SVector
-
     vargs  :: Dict{Symbol,Any}
 end
 
@@ -44,9 +40,9 @@ end
 
 #==============================================================================#
 
-chains(model::SinglePolyion{TC}) where TC = ChainStructure{TC}(model.np, model.omega[1], model.b, model.lp)
+chain_structures(model::SinglePolyion{TC}) where TC = ChainStructure{TC}(model.np, model.lp, model.b, model.omega[1])
 
-chains(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, model.omega[1], model.b, vars[2])
+chain_structures(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, vars[2], model.b, model.omega[1])
 
 function neutralbulk(phi, model::SinglePolyion)
     sig = model.sig

@@ -42,15 +42,15 @@ function differencebulk(phi, model)
     end
 end
 
-function chains(model::TwoChainModel{TC}) where TC
-    achain = ChainStructure{TC}(model.np[1], model.omega[1], model.b[1], model.lp[1])
-    cchain = ChainStructure{TC}(model.np[2], model.omega[2], model.b[2], model.lp[2])
+function chain_structures(model::TwoChainModel{TC}) where TC
+    achain = ChainStructure{TC}(model.np[1], model.lp[1], model.b[1], model.omega[1])
+    cchain = ChainStructure{TC}(model.np[2], model.lp[2], model.b[2], model.omega[2])
     return (achain, cchain)
 end
 
-function chains(model::TwoChainModel{AdaptiveChain}, vars)
-    achain = ChainStructure{AdaptiveChain}(model.np[1], model.omega[1], model.b[1], vars[end-1])
-    cchain = ChainStructure{AdaptiveChain}(model.np[2], model.omega[2], model.b[2], vars[end])
+function chain_structures(model::TwoChainModel{AdaptiveChain}, vars)
+    achain = ChainStructure{AdaptiveChain}(model.np[1], vars[end-1], model.b[1], model.omega[1])
+    cchain = ChainStructure{AdaptiveChain}(model.np[2], vars[end], model.b[2], model.omega[2])
     return (achain, cchain)
 end
 

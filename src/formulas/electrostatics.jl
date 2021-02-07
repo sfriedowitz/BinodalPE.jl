@@ -89,8 +89,8 @@ function ktilde2(q, phi, vars, model::SinglePolyion)
     phiPF = phiP - alpha*phiA*wP/wA
 
     smA, smP, smM = gamq.(q, model.smear)
-    pol = chains(model, vars)
-    gA = gchain(q, pol)
+    chain = chain_structures(model, vars)
+    gA = gchain(chain, q)
 
 	return (4*pi*lB)*(phiM*smM^2/wM + phiPF*smP^2/wP + phiA*nA*sigA^2*smA^2*gA/wA)
 end
@@ -103,8 +103,8 @@ function ktilde2(q, phi, vars, model::SymmetricCoacervate)
     lB = model.lB
 
     # Derived parameters
-    pol = chains(model, vars)
-    gP = gchain(pol, q)
+    chain = chain_structures(model, vars)
+    gP = gchain(chain, q)
 	smP, smS = gamq.(q, model.smear)
 
 	return (4*pi*lB)*(phiS*smS^2/wS + phiP*np*sig^2*smP^2*gP/wP)
@@ -118,8 +118,8 @@ function ktilde2(q, phi, vars, model::AsymmetricCoacervate)
     lB = model.lB
 
     # Derived parameters
-    apol, cpol = chains(model, vars)
-    gA, gC = gchain(apol, q), gchain(cpol, q)
+    chains = chain_structures(model, vars)
+    gA, gC = gchain.(chains, q)
     smA, smC, smP, smM = gamq.(q, model.smear)
 
 	return (4*pi*lB)*(phiP*smP^2/wP + phiM*smM^2/wM + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
@@ -138,8 +138,8 @@ function ktilde2(q, phi, vars, model::AssociationCoacervate)
     phiPF = phiP - (alphaAP*phiA*wP)/wA
     phiMF = phiM - (alphaCM*phiC*wM)/wC
 
-    apol, cpol = chains(model, vars)
-    gA, gC = gchain(apol, q), gchain(cpol, q)
+    chains = chain_structures(model, vars)
+    gA, gC = gchain.(chains, q)
     smA, smC, smP, smM = gamq.(q, model.smear)
 
 	return (4*pi*lB)*(phiPF*smP^2/wP + phiMF*smM^2/wM + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)

@@ -23,9 +23,9 @@ abstract type SphericalGlobule <: AbstractChainStructure end
 
 struct ChainStructure{TC <: AbstractChainStructure}
 	np :: Float64
-	w  :: Float64
-	b  :: Float64
 	lp :: Float64
+	b  :: Float64
+	w  :: Float64
 end
 
 gchain(chain::ChainStructure{<:Union{PointLike,SmearedPoint}}, q) = 1.0

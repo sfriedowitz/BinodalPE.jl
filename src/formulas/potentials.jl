@@ -16,7 +16,7 @@ function muel_association(phi, vars, model::SinglePolyion)
     # Derived parameters
     alpha = vars[1]
     sig = 1 - alpha
-    pol = chains(model, vars)
+    pol = chain_structures(model, vars)
 
     # Integration function
     function integrand(q)
@@ -45,7 +45,7 @@ function muel_association(phi, vars, model::AssociationCoacervate)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
 
-    apol, cpol = chains(model, vars)
+    apol, cpol = chain_structures(model, vars)
 
     # Integration functions
     function integrand(q)

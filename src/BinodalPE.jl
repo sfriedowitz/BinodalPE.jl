@@ -42,7 +42,7 @@ export savebndl, readbndl, add_state!
 
 # Model methods
 export swap, swap!, valid, set_bulk!, newstate
-export free_energy, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, mupressure
+export ftotal, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, mupressure
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
 
 # Some utilities
@@ -82,7 +82,7 @@ include("formulas/chi.jl")
 include("formulas/electrostatics.jl")
 include("formulas/association.jl")
 include("formulas/potentials.jl")
-include("formulas/adaptive_chain.jl")
+include("formulas/adaptive.jl")
 
 include("optimize.jl")
 include("plotting.jl")
