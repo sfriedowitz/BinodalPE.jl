@@ -54,7 +54,6 @@ function ftotal(phi, model::AssociationCoacervate)
         assoc = varsolve(phi, model; model.vargs...)
     catch e
         @warn "Association solver failure." maxlog = 1
-        #println(ForwardDiff.value.(phi))
         nothing
     end
 
@@ -141,10 +140,6 @@ function varinit(phi, model::AssociationCoacervate)
         end
     end
 
-    # # Initial clamps
-    alphaAP0 = clamp(alphaAP0, 1e-10, 0.95)
-    alphaCM0 = clamp(alphaCM0, 1e-10, 0.95)
-
     # Ion pairing extents
     betaA = (1-alphaAP0)*phiA/wA
     betaC = (1-alphaCM0)*phiC/wC
@@ -170,12 +165,9 @@ function varinit(phi, model::AssociationCoacervate)
         betaC0 = beta * betaA / betaC
     end
 
-    betaA0 = clamp(betaA0, 1e-8, 0.95)
-    betaC0 = clamp(betaC0, 1e-8, 0.95)
-
     init = [alphaAP0, alphaCM0, betaA0, betaC0]
     for i in eachindex(init)
-        if isnan(init[i])
+        if init[i] <= 0.0 || init[i] >= 1.0 || isnan(init[i])
             init[i] = 0.5
         end
     end

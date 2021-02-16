@@ -74,8 +74,8 @@ function _newton_solve(df::OnceDifferentiable, initial_x::AbstractArray{T},
             value_jacobian!(df, cache.x)
         end
 
-        # replace!(df.F, NaN => 0.0)
-        # replace!(df.DF, NaN => 0.0)
+        replace!(df.F, NaN => 0.0)
+        replace!(df.DF, NaN => 0.0)
 
         try
             mul!(vec(cache.g), transpose(jacobian(df)), vec(value(df)))

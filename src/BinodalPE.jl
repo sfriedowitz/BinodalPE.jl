@@ -43,7 +43,7 @@ export savebndl, readbndl, add_state!
 # Model methods
 export swap, swap!, valid, set_bulk!, newstate
 export ftotal, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, mupressure
-export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!
+export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!, selfcompsolve
 
 # Some utilities
 export chain_structures, gchain, gcoil, grod, gworm, gsphere, gamma2

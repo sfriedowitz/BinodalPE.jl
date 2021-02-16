@@ -21,10 +21,10 @@ function SelfComplimentaryCoacervate(; structure::Type{<:AbstractChainStructure}
     fA = get(kwargs, :fA, 1.0)
     vAA = get(kwargs, :vAA, 1.0)
     dgAA = get(kwargs, :dgAA, 0.0)
-    dgI = get(kwargs, :dgI, [0.0, 0.0, 0.0])
+    dg = get(kwargs, :dg, [0.0, 0.0, 0.0])
 
     # Use association model struct as field
-    assoc = AssociationCoacervate(; structure = structure, dg = dgI, kwargs...)
+    assoc = AssociationCoacervate(; structure = structure, dg = dg, kwargs...)
     model = SelfComplimentaryCoacervate{structure}(zeros(4), omega, sig, fA, vAA, dgAA, assoc)
 
     return model
