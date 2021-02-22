@@ -45,7 +45,7 @@ function ftotal(phi, model::SelfComplimentaryCoacervate)
 
     # Majority of free energy from association sub-model
     ftrans = ftranslational(phi, assoc, model.assoc)
-    fcomb = fcombinatoric(phi, assoc, model.assoc)
+    fcomb = fcombinatorial(phi, assoc, model.assoc)
     finf = fbinding(phi, assoc, model.assoc)
     ffh = fchi(phi, model.assoc)
     fel = felectrostatic(phi, assoc, model.assoc)

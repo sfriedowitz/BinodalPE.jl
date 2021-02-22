@@ -21,11 +21,11 @@
         bndl = toconc(bndl, omega)
     end
 
-    # Map the full data state
-    bulk_data = hcat([map(state.bulk) for state in bndl]...)'
-
     sup = hcat([map(state.sup) for state in bndl]...)'
     dense = hcat([map(state.dense) for state in bndl]...)'
+
+    # Map the full data state
+    bulk_data = hcat([map(state.bulk) for state in bndl]...)'
 
     bndl_data = vcat(sup, reverse(dense, dims = 1))
     npoints = size(bndl_data, 1)
@@ -38,9 +38,9 @@
         z = bndl_data[:,3]
             
         seriestype --> :path
+        minorticks --> false
         @series begin
             primary := true
-            minorticks := false
             x, y, z
         end
 
@@ -80,7 +80,7 @@
                 markerstrokecolor := :black
                 markerstrokewidth := 2
                 markerstrokealpha := 1.0
-                bulk_data[:,1], bulk_data[:,2]
+                bulk_data[:,1], bulk_data[:,2], bulk_data[:,3]
             end
         end
 

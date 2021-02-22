@@ -5,7 +5,7 @@
 felectrostatic(phi, model::AbstractModel) = felectrostatic(phi, (), model)
 
 function felectrostatic(phi, vars, model::AbstractModel)
-    integrand(q) = (1/(4*π^2)) * q^2 * log(1 + ktilde2(q, phi, vars, model)/q^2)
+    integrand(q) = (1/(4*π^2)) * q^2 * log(1 + kappa2(q, phi, vars, model)/q^2)
     sol, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER)
     return sol
 end
@@ -75,9 +75,9 @@ end
 
 #==============================================================================#
 
-ktilde2(q, phi, vars, model::AbstractModel) = notimpl("ktilde2", typeof(model))
+kappa2(q, phi, vars, model::AbstractModel) = notimpl("kappa2", typeof(model))
 
-function ktilde2(q, phi, vars, model::SinglePolyion)
+function kappa2(q, phi, vars, model::SinglePolyion)
 	phiA, phiP, phiM = phi
     wA, wP, wM = model.omega
     nA = model.np
@@ -95,7 +95,7 @@ function ktilde2(q, phi, vars, model::SinglePolyion)
 	return (4*pi*lB)*(phiM*smM^2/wM + phiPF*smP^2/wP + phiA*nA*sigA^2*smA^2*gA/wA)
 end
 
-function ktilde2(q, phi, vars, model::SymmetricCoacervate)
+function kappa2(q, phi, vars, model::SymmetricCoacervate)
     phiP, phiS = phi
     wP, wS = model.omega
     sig = model.sig
@@ -110,7 +110,7 @@ function ktilde2(q, phi, vars, model::SymmetricCoacervate)
 	return (4*pi*lB)*(phiS*smS^2/wS + phiP*np*sig^2*smP^2*gP/wP)
 end
 
-function ktilde2(q, phi, vars, model::AsymmetricCoacervate)
+function kappa2(q, phi, vars, model::AsymmetricCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
     sigA, sigC = model.sig
@@ -125,7 +125,7 @@ function ktilde2(q, phi, vars, model::AsymmetricCoacervate)
 	return (4*pi*lB)*(phiP*smP^2/wP + phiM*smM^2/wM + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
 end
 
-function ktilde2(q, phi, vars, model::AssociationCoacervate)
+function kappa2(q, phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
     nA, nC = model.np

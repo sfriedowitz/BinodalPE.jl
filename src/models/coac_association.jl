@@ -58,7 +58,7 @@ function ftotal(phi, model::AssociationCoacervate)
     end
 
     ftrans = ftranslational(phi, assoc, model)
-    fcomb = fcombinatoric(phi, assoc, model)
+    fcomb = fcombinatorial(phi, assoc, model)
     finf = fbinding(phi, assoc, model)
     ffh = fchi(phi, model)
     fel = felectrostatic(phi, assoc, model)

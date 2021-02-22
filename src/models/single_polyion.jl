@@ -62,7 +62,7 @@ function ftotal(phi, model::SinglePolyion)
 
     ftot = ftranslational(phi, assoc, model)
     ftot += fchi(phi, model)
-    ftot += fcombinatoric(phi, assoc, model)
+    ftot += fcombinatorial(phi, assoc, model)
     ftot += fbinding(phi, assoc, model)
     ftot += felectrostatic(phi, assoc, model)
 

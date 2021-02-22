@@ -2,7 +2,7 @@
 # Association combinatorics
 #==============================================================================#
 
-function fcombinatoric(phi, vars, model::SinglePolyion)
+function fcombinatorial(phi, vars, model::SinglePolyion)
     phiA = phi[1]
     alpha = vars[1]
     wA = model.omega[1]
@@ -10,7 +10,7 @@ function fcombinatoric(phi, vars, model::SinglePolyion)
     return (phiA/wA)*(alpha*log(alpha) + (1-alpha)*log(1-alpha))
 end
 
-function fcombinatoric(phi, vars, model::AssociationCoacervate)
+function fcombinatorial(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     alphaAP, alphaCM, betaA, betaC = vars
     wA, wC, wP, wM = model.omega

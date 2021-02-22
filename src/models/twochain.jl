@@ -78,6 +78,7 @@ function bndlunscale!(x, model::TwoChainModel)
     return nothing
 end
 
+
 function bndlstate(x, model::TwoChainModel)
     @assert length(x) == 4 || length(x) == 10 "Invalid number of parameters for binodal state. Requires (4, 10) for $(typeof(model))."
 
@@ -89,14 +90,14 @@ function bndlstate(x, model::TwoChainModel)
         sigA, sigC = model.sig
         
         # Derive dense phase params
-        phiPC = wP/(wP+wM) - phiAC*(wP/(wP+wM)) - phiCC*(wP/(wP+wM)) - phiWC*(wP/(wP+wM)) + sigA*phiAC*(wM*wP/(wA*(wP+wM))) - sigC*phiCC*(wM*wP/(wC*(wP+wM)))
+        phiPC = wP/(wP+wM) - wP*(phiAC + phiCC + phiWC)/(wP+wM) + sigA*phiAC*(wM*wP/(wA*(wP+wM))) - sigC*phiCC*(wM*wP/(wC*(wP+wM)))
         phiMC = 1 - phiAC - phiCC - phiPC - phiWC
         
         # Derive supernatant phase params
         phiAS = (phiAB - nu*phiAC)/(1 - nu)
         phiCS = (phiCB - nu*phiCC)/(1 - nu)
         phiWS = (phiWB - nu*phiWC)/(1 - nu)
-        phiPS = wP/(wP+wM) - phiAS*(wP/(wP+wM)) - phiCS*(wP/(wP+wM)) - phiWS*(wP/(wP+wM)) + sigA*phiAS*(wM*wP/(wA*(wP+wM))) - sigC*phiCS*(wM*wP/(wC*(wP+wM)))
+        phiPS = wP/(wP+wM) - wP*(phiAS + phiCS + phiWS)/(wP+wM) + sigA*phiAS*(wM*wP/(wA*(wP+wM))) - sigC*phiCS*(wM*wP/(wC*(wP+wM)))
         phiMS = 1 - phiAS - phiCS - phiPS - phiWS
 
         # Update state struct

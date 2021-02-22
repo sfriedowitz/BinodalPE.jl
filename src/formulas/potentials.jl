@@ -22,7 +22,7 @@ function muel_association(phi, vars, model::SinglePolyion)
     function integrand(q)
         gA = gchain(pol, q)
         smA, smP, smM = gamq.(q, model.smear)
-        -(lB/pi)*(smP^2 + 2*np*sig*smA^2*gA)/(1 + ktilde2(q, phi, vars, model)/q^2)
+        -(lB/pi)*(smP^2 + 2*np*sig*smA^2*gA)/(1 + kappa2(q, phi, vars, model)/q^2)
     end
 
     pot, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER, maxevals = 100)
@@ -57,7 +57,7 @@ function muel_association(phi, vars, model::AssociationCoacervate)
         num_bc  = -(2*lB/pi) * (nA*sigA*smA^2*gA + nC*sigC*smC^2*gC)
         numerators = @SVector [num_ap, num_cm, num_bc]
 
-        numerators / (1 + ktilde2(q, phi, vars, model)/q^2)
+        numerators / (1 + kappa2(q, phi, vars, model)/q^2)
     end
 
     pots, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER, maxevals = 100)
