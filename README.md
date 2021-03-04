@@ -12,10 +12,6 @@ and charge neutrality in each macroscopic phase.
 
 The package implements a series of `AbstractModel`s
 that describe a specific physical system and free energy function.
-Each model receives numerous parameters that describe
-the structural and energetic properties of salt and polyelectrolyte species,
-including polymer chain lengths, charge densities, monomer volumes, and conformational properties.
-
 Four main models are currently available:
 1. `SinglePolyion` - A solution consisting of a single polyelectrolyte (A), counterions (+), and coions (-),
 where the counterions can reversibly bind along the PE chain.
@@ -24,6 +20,32 @@ where the counterions can reversibly bind along the PE chain.
 4. `AssociationCoacervate` - Same species as in an asymmetric coacervate, but with a thermodynamic description of local charge binding. 
 This includes cation binding on the polyanions, anion binding along the polycations,
 and interchain cross-linking betweeen the polyelectrolytes.
+
+Each model depends on numerous parameters that describe
+the structural and energetic properties of salt and polyelectrolyte species,
+including polymer chain lengths, charge densities, and monomer volumes.
+These include: 
+* `omega` - The normalized monomer volume of a species
+* `np` - The chain length of a polymer
+* `sig` - The linear charge density of a polymer
+* `chi` - The Flory-Huggins parameter between polymer and solvent
+* `b` - The normalized segment length of a polymer
+* `lp` - The reference persistence length of a semi-flexible polymer (only used for worm-like chains)
+
+Additionally, the electrostatic free energy within a model
+depends on the conformational properties of the polyelectrolytes.
+It is mandatory to specify an `AbstractChainStructure` when constructing an `AbstractModel`,
+which specifies the structure factor of the polymers
+used within the electrostatic free energy.
+Available chain structures include:
+* `PointLike` - A Debye-Huckel description of point-like ions
+* `ExtendedPoint` - The extended Debye-Huckel description for point-like ions
+* `SmearedPoint` - A Debye-Huckel model for point-like ions with density smearing to regularize electrostatic interactions
+* `GaussianCoil` - A flexible Gaussian coil described by the Debye function
+* `RodLike` - A rigid, rod-like chain described by the Neugebauer function
+* `WormLike` - A semiflexible, worm-like chain with an interpolated structure factor depending on the persistence length `lp`
+* `SphericalGlobule` - A collapsed, globular polyelectrolyte
+* `AdaptiveChain` - A worm-like chain with adaptively determined persistence length based on the RGF formalism (not available in all models)
 
 ## Usage
 
