@@ -156,6 +156,7 @@ BinodalState:
 ```
 
 ## TODO
+* Expanded set of example notebooks for code usage and features
 * Binodal Newton stability w/ sub optimal initial guesses
 * Stable spinodal/critical point methods
 * Transfer formulas into a type-based method for each interaction (modular interaction design)
