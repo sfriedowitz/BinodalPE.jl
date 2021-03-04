@@ -8,8 +8,13 @@ amounts to equating the electrochemical potentials of all species
 and the osmotic pressure between the phases, overall mass balance by the lever rule, 
 and charge neutrality in each macroscopic phase.
 
-Four main models exist, each corresponding to a different physical system:
-1. Single Polyion - A solution consisting of a single polyelectrolyte, counterions, and coions,
+## Models
+
+The package implements a series of `AbstractModel`s
+that describe a specific physical system and free energy function.
+
+Four main models exist:
+1. `SinglePolyion` - A solution consisting of a single polyelectrolyte, counterions, and coions,
 where the counterions can reversibly bind along the PE chain.
 2. Symmetric Coacervate - A solution consisting of a single "polymer" density
 and a single "salt" density, which can phase separate into a coexisting coacervate and supernatant.

@@ -61,7 +61,8 @@
             linewidth := 1.5
             marker := false
 
-            for i = 1:mid
+            tieskip = floor(Int, max(tieskip, 1))
+            for i = 1:tieskip:mid
                 tl = transpose([[lx[i], ly[i], lz[i]] [rx[i], ry[i], rz[i]]])
                 @series begin
                     seriestype := :line
