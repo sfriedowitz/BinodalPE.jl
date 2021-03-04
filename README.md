@@ -12,14 +12,14 @@ and charge neutrality in each macroscopic phase.
 
 The package implements a series of `AbstractModel`s
 that describe a specific physical system and free energy function.
-Four main models are currently available:
+Four main models are available:
 1. `SinglePolyion` - A solution consisting of a single polyelectrolyte (A), counterions (+), and coions (-),
-where the counterions can reversibly bind along the PE chain.
+where the counterions can reversibly bind along the PE chain
 2. `SymmetricCoacervate` - A solution consisting of a single "polymer" density (P) and a single "salt" density (S)
-3. `AsymmetricCoacervate` - A solution with explicit treatment of polyanions (A), polycations (C), cations (+), and anions (-).
-4. `AssociationCoacervate` - Same species as in an asymmetric coacervate, but with a thermodynamic description of local charge binding. 
+3. `AsymmetricCoacervate` - A solution with explicit treatment of polyanions (A), polycations (C), cations (+), and anions (-)
+4. `AssociationCoacervate` - Same species as in an asymmetric coacervate, but with a thermodynamic description of local charge binding
 This includes cation binding on the polyanions, anion binding along the polycations,
-and interchain cross-linking betweeen the polyelectrolytes.
+and interchain cross-linking betweeen the polyelectrolytes
 
 Each model depends on numerous parameters that describe
 the structural and energetic properties of salt and polyelectrolyte species,
@@ -31,12 +31,12 @@ These include:
 * `chi` - The Flory-Huggins parameter between polymer and solvent
 * `b` - The normalized segment length of a polymer
 * `lp` - The reference persistence length of a semi-flexible polymer (only used for worm-like chains)
+* `dg` - Short-range binding energy for models with reversible binding (`SinglePolyion` and `AssociationCoacervate`)
 
-Additionally, the electrostatic free energy within a model
+The electrostatic free energy within a model
 depends on the conformational properties of the polyelectrolytes.
-It is mandatory to specify an `AbstractChainStructure` when constructing an `AbstractModel`,
-which specifies the structure factor of the polymers
-used within the electrostatic free energy.
+It is mandatory to specify an `AbstractChainStructure` when constructing a model
+that specifies the structure factor of the polymers used within the electrostatic free energy.
 Available chain structures include:
 * `PointLike` - A Debye-Huckel description of point-like ions
 * `ExtendedPoint` - The extended Debye-Huckel description for point-like ions
@@ -49,7 +49,65 @@ Available chain structures include:
 
 ## Usage
 
-An example of code usage is shown below:
+The general usage of this code is to:
+1. Construct a model with a given set of parameters
+2. Specify an initial bulk solution composition and initial guess for the compositions of coexisting phases
+3. Sweep over a range of relevant parameters and solve for phase coexistence
+with the `bndlsolve` or `bndlminimize` methods
+
+This workflow is enabled by a series of general methods
+implemented for each model, including 
+`ftotal(phi, model)` which returns the free energy at a given composition `phi`,
+`mutotal(phi, model)` which returns the chemical potential of each species evaluated at `phi`,
+and `f2total(phi, model)` which returns the Hessian of the free energy evaluated at `phi`.
+
+Additionally, for `SinglePolyion` and `AssociationCoacervate` models,
+or any model with an `AdaptiveChain` structure specified,
+one can solve for a set of internal state variables at a specified composition.
+These may include binding fractions for reversible, short-range ion binding,
+or the adaptively determined persistence length of an adaptive chain.
+The internal solver routine for each model is implemented in the method `varsolve(phi, model)`.
+
+Examples of these general procedures are shown below.
+
+### Construct a model
+
+```julia
+julia> using BinodalPE 
+
+julia> model_single = SinglePolyion(structure = GaussianCoil, omega = [5, 5, 1], np = 100, sig = 1.0, dg = -5)
+
+julia> model_symm = SymmetricCoacervate(structure = RodLike, omega = [5, 1], np = 1000, sig = 0.5)
+
+julia> modle_asymm = AsymmetricCoacervate(structure = WormLike, omega = [5, 5, 1, 1], np = [100, 100], sig = [0.5, 0.5], lp = [10, 10])
+
+julia> model_assoc = AssociationCoacervate(structure = AdaptiveChain, omega = [5, 5, 1, 1], np = [100, 100], dg = [-4, -4, -8])
+```
+
+### Evaluate a model
+
+```julia
+julia> using BinodalPE
+
+julia> model = SinglePolyion(structure = GaussianCoil, omega = [5, 1, 1], np = 100, dg = -5)
+
+julia> phi = [1e-4, 1.1e-3, 1e-3] # Volume fractions of polyanions, cations, and anions
+
+julia> ftotal(phi, model) # Evaluate the solution free energy
+-0.014242526701396035
+
+julia> mutotal(phi, model) # Evaluate the chemical potentials of each species
+3-element Array{Float64,1}:
+ -1.0952518718803692
+ -5.770961458699611
+ -5.849320207862141
+
+julia> varsolve(phi, model) # Solve for the binding fraction of counterions on the chain
+1-element Array{Float64,1}:
+ 0.9241066860547466
+```
+
+### Solve a point on a phase diagram
 
 ```julia
 julia> model = SymmetricCoacervate(structure = GaussianCoil, np = 100, sig = 0.25, omega = [1, 1])
@@ -103,7 +161,7 @@ BinodalState:
 ## Publications
 
 A number of publications describe the methods and theory implemented in this package.
-We refer the user to these publications for details on model implementation.
+We refer the user to these publications for details on theories implemented here.
 
 1. Treatment of electrostatics
 ```bibtex
