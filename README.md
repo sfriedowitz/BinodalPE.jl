@@ -110,6 +110,8 @@ julia> varsolve(phi, model) # Solve for the binding fraction of counterions on t
 ### Solve a point on a phase diagram
 
 ```julia
+julia> using BinodalPE
+
 julia> model = SymmetricCoacervate(structure = GaussianCoil, np = 100, sig = 0.25, omega = [1, 1])
 SymmetricCoacervate{GaussianCoil}(bulk = [0.0, 0.0])
 
