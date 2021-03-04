@@ -115,7 +115,7 @@ julia> using BinodalPE
 julia> model = SymmetricCoacervate(structure = GaussianCoil, np = 100, sig = 0.25, omega = [1, 1])
 SymmetricCoacervate{GaussianCoil}(bulk = [0.0, 0.0])
 
-julia> phi = [0.01, 0.025];
+julia> phi = [0.01, 0.025]
 
 julia> ftotal(phi, model)
 -0.1017901482330647
@@ -127,7 +127,7 @@ julia> mutotal(phi, model)
  
 julia> set_bulk!(model, [0.01, 0.072])
 
-julia> init = [0.0005, 0.0725, 0.04056618971, 0.0725, 0.06];
+julia> init = [0.0005, 0.0725, 0.04056618971, 0.0725, 0.06] # Initial guesses for [phiP_sup, phiS_sup, phiP_coac, phiS_coac, volume_coac]
  
 julia> res = bndlsolve(init, model; iterations = 50, ftol = 1e-10, show_trace = true)
 Iter     f(x) inf-norm    Step 2-norm 
