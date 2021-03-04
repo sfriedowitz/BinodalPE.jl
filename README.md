@@ -12,18 +12,20 @@ and charge neutrality in each macroscopic phase.
 
 The package implements a series of `AbstractModel`s
 that describe a specific physical system and free energy function.
+Each model receives numerous parameters that describe
+the structural and energetic properties of salt and polyelectrolyte species,
+including polymer chain lengths, charge densities, monomer volumes, and conformational properties.
 
-Four main models exist:
-1. `SinglePolyion` - A solution consisting of a single polyelectrolyte, counterions, and coions,
+Four main models are currently available:
+1. `SinglePolyion` - A solution consisting of a single polyelectrolyte (A), counterions (+), and coions (-),
 where the counterions can reversibly bind along the PE chain.
-2. Symmetric Coacervate - A solution consisting of a single "polymer" density
-and a single "salt" density, which can phase separate into a coexisting coacervate and supernatant.
-3. Asymmetric Coacervate - A solution with explicit treatment of polyanions, polycations,
-salt cations, and salt anions.
-4. Association Coacervate - Same system as an asymmetric coacervate,
-but where reversible charge association along the polyelectrolytes is treated.
-Cation binding on the polyanions, anion binding along the polycations,
-and interchain ion-pairing betweeen the PEs are considered.
+2. `SymmetricCoacervate` - A solution consisting of a single "polymer" density (P) and a single "salt" density (S)
+3. `AsymmetricCoacervate` - A solution with explicit treatment of polyanions (A), polycations (C), cations (+), and anions (-).
+4. `AssociationCoacervate` - Same species as in an asymmetric coacervate, but with a thermodynamic description of local charge binding. 
+This includes cation binding on the polyanions, anion binding along the polycations,
+and interchain cross-linking betweeen the polyelectrolytes.
+
+## Usage
 
 An example of code usage is shown below:
 
