@@ -11,6 +11,8 @@ abstract type AbstractModel{TC <: AbstractChainStructure} end
 
 Base.show(io::IO, model::TM) where TM <: AbstractModel = @printf(io, "%s(bulk = %s)", TM, model.bulk)
 
+Base.eltype(model::AbstractModel{TC}) where TC = TC
+
 #==============================================================================#
 
 """
