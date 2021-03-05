@@ -76,19 +76,23 @@ varunscale(x, model::AssociationCoacervate) = [exp(v)/(1 + exp(v)) for v in x]
 
 function varscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
-    for i = 1:4; new[i] = log(x[i]/(1-x[i])); end
+    for i = 1:3; new[i] = log(x[i]/(1-x[i])); end
+    new[4] = log(x[4])
     new[5] = log(x[5])
-    new[6] = log(x[6])
     return new
 end
 
 function varunscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
-    for i = 1:4; new[i] = exp(x[i])/(1+exp(x[i]));  end
+    for i = 1:3; new[i] = exp(x[i])/(1+exp(x[i]));  end
+    new[4] = exp(x[4])
     new[5] = exp(x[5])
-    new[6] = exp(x[6])
     return new
 end
+
+other_beta(phi, omega, vars) = other_beta(phi[1], phi[2], omega[1], omega[2], vars[1], vars[2], vars[3])
+
+other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA) = phiA*betaA*(1-alphaAP)/wA * (wC/(phiC*(1-alphaCM)))
 
 function valid_variational(xs, phi, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
@@ -140,6 +144,9 @@ function varinit(phi, model::AssociationCoacervate)
         end
     end
 
+    alphaAP0 = clamp(alphaAP0, 1e-14, 0.9999)
+    alphaCM0 = clamp(alphaCM0, 1e-14, 0.9999)
+
     # Ion pairing extents
     betaA = (1-alphaAP0)*phiA/wA
     betaC = (1-alphaCM0)*phiC/wC
@@ -165,7 +172,7 @@ function varinit(phi, model::AssociationCoacervate)
         betaC0 = beta * betaA / betaC
     end
 
-    init = [alphaAP0, alphaCM0, betaA0, betaC0]
+    init = [alphaAP0, alphaCM0, betaA0]
     for i in eachindex(init)
         if init[i] <= 0.0 || init[i] >= 1.0 || isnan(init[i])
             init[i] = 0.5
@@ -187,7 +194,8 @@ function varf!(F, x, phi, model::AssociationCoacervate)
     dgAP, dgCM, dgIP = model.dg
    
     vars = varunscale(x, model)
-    alphaAP, alphaCM, betaA, betaC = vars
+    alphaAP, alphaCM, betaA = vars
+    betaC = other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA)
 
     phiPF = phiP - alphaAP*phiA*wP/wA
     phiMF = phiM - alphaCM*phiC*wM/wC
@@ -195,12 +203,13 @@ function varf!(F, x, phi, model::AssociationCoacervate)
     sigC = (1-alphaCM)*(1-betaC)
     
     # Electrostatic exchange potentials
+    vars = @SVector [alphaAP, alphaCM, betaA, betaC]
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     
     F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
     F[2] = log(alphaCM/(sigC*phiMF)) + dgCM + mu_cm - 1
     F[3] = log(exp(1.0) * (betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
-    F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
+    #F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
 
     return nothing
 end
@@ -211,7 +220,8 @@ function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
     dgAP, dgCM, dgIP = model.dg
 
     vars = varunscale(x, model)
-    alphaAP, alphaCM, betaA, betaC, lpA, lpC = vars
+    alphaAP, alphaCM, betaA, lpA, lpC = vars
+    betaC = other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA)
 
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
@@ -219,15 +229,58 @@ function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
     phiMF = phiM - alphaCM*phiC*wM/wC
     
     # Electrostatic exchange potentials
+    vars = @SVector [alphaAP, alphaCM, betaA, betaC, lpA, lpC]
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     dfA, dfC = dftot_adaptive(phi, vars, model)
     
     F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
     F[2] = log(alphaCM/(sigC*phiMF)) + dgCM + mu_cm - 1
     F[3] = log((betaC*exp(1.0)*wA)/(1-betaC)/(sigA*phiA)/(wA+wC)) + dgIP + mu_bc - 1
-    F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
-    F[5] = dfA
-    F[6] = dfC
+    #F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
+    F[4] = dfA
+    F[5] = dfC
 
     return nothing
+end
+
+function varsolve(phi, model::AssociationCoacervate;
+    iterations::Integer = 50,
+    xtol::Real = 0.0,
+    ftol::Real = 1e-10,
+    rlxn::Real = 1.0,
+    pmax::Real = 100.0,
+    autodiff::Symbol = :finite,
+    scaling::AbstractArray = [],
+    store_trace::Bool = false,
+    show_trace::Bool = false,
+    extended_trace::Bool = false,
+    linesearch = LineSearches.BackTracking(order = 3),
+    linsolve = (x, A, b) -> copyto!(x, A\b),
+)
+    # Setup vectors and df
+    init = varinit(phi, model)
+    x0 = varscale(init, model)
+    F0 = similar(x0)
+    TF = eltype(x0)
+
+    function f!(F, x)
+        varf!(F, x, phi, model)
+        for i = 1:min(length(F), length(scaling))
+            F[i] *= scaling[i]
+        end
+        return nothing
+    end
+    df = OnceDifferentiable(f!, x0, F0, autodiff)
+
+    # Internal solver routine after setup
+    sol = _newton_solve(df, x0, iterations, convert(TF, xtol), convert(TF, ftol), convert(TF, rlxn), convert(TF, pmax),
+                        store_trace, show_trace, extended_trace, linesearch, linsolve)
+
+
+    # Map back based on stoich constraint
+    vars = varunscale(sol.zero, model)
+    betaC = other_beta(phi, model.omega, vars)
+    insert!(vars, 4, betaC)
+
+    return vars
 end
