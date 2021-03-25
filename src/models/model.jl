@@ -67,9 +67,9 @@ bndlunscale!(x, model::AbstractModel) = notimpl("bndlunscale!", typeof(model))
 
 newstate(model::AbstractModel) = BinodalState(model.bulk)
 
-chain_structures(model::AbstractModel) = notimpl("chain_structures(model)", typeof(model))
+chainstructs(model::AbstractModel) = notimpl("chainstructs(model)", typeof(model))
 
-chain_structures(model::AbstractModel, vars) = chain_structures(model)
+chainstructs(model::AbstractModel, vars) = chainstructs(model)
 
 bndlminx(state::BinodalState, model::AbstractModel) = notimpl("bndlminx", typeof(model))
 

@@ -47,7 +47,7 @@ export ftranslational, fchi, felectrostatic, fcombinatorial, fbinding, fselfcomp
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!, selfcompsolve
 
 # Some utilities
-export kbar, kappa2, chain_structures, gchain, gcoil, grod, gworm, gsphere, gamq, gamma2
+export kbar, kappa2, chainstructs, gchain, gcoil, grod, gworm, gsphere, gamq, gamma2
 export tophi, toconc, neutralbulk, differencebulk, asypolyion
 
 #==============================================================================#

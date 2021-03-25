@@ -2,13 +2,13 @@
 # Adaptive chain structure free energy
 #==============================================================================#
 
-gamma2(np, lp, b = 1.0) = 2.0*(lp/b)*(1.0 - (lp/np/b)*(1.0 - exp(-np*b/lp)))
+gamma2(lp, dp, b = 1.0) = 2.0*(lp/b)*(1.0 - (lp/dp/b)*(1.0 - exp(-dp*b/lp)))
 
-dgamma2(np, lp, b = 1.0) = (2.0/b)*(1.0 + exp(-np*b/lp)) + (4*lp/np/b^2)*(exp(-np*b/lp) - 1.0)
+dgamma2(lp, dp, b = 1.0) = (2.0/b)*(1.0 + exp(-dp*b/lp)) + (4*lp/dp/b^2)*(exp(-dp*b/lp) - 1.0)
 
-function dgworm(q, np, lp, b = 1.0)
-    dcoil = -3*q*exp(-lp*q/2)*(6 + b*np*q*(2 + lp*q)) / (6 + b*lp*np*q^2)^2
-    drod = q*exp(-lp*q/2)/(2*(1 + b*np*q/pi))
+function dgworm(q, lp, dp, b = 1.0)
+    dcoil = -3*q*exp(-lp*q/2)*(6 + b*dp*q*(2 + lp*q)) / (6 + b*lp*dp*q^2)^2
+    drod = q*exp(-lp*q/2)/(2*(1 + b*dp*q/pi))
     return dcoil + drod
 end
 
@@ -17,24 +17,24 @@ end
 #==============================================================================#
 
 function dfent_adaptive(vars, model::SinglePolyion{AdaptiveChain})
-    lp = vars[2]
-    np = model.np
-    b = model.b
+    lpA = vars[2]
+    nA = model.dp
+    bA = model.b
 
-    g2 = gamma2(np, lp, b)
-    dg2 = dgamma2(np, lp, b)
-    dfent = -1.5*(dg2/g2 - dg2/(1 - g2/np))
+    g2 = gamma2(lpA, nA, bA)
+    dg2 = dgamma2(lpA, nA, bA)
+    dfent = -1.5*(dg2/g2 - dg2/(1 - g2/nA))
 
     return dfent
 end
 
 function dfint_adaptive(phi, vars, model::SinglePolyion{AdaptiveChain})
-    alpha, lp = vars
+    alpha, lpA = vars
     phiA, phiP, phiM = phi
     wA, wP, wM = model.omega
     aA, aP, aM = model.smear
-    np = model.np
-    b = model.b
+    nA = model.dp
+    bA = model.b
     lB = model.lB
 
     # Derived parameters
@@ -42,14 +42,14 @@ function dfint_adaptive(phi, vars, model::SinglePolyion{AdaptiveChain})
     phiPF = phiP - alpha*phiA*wP/wA
 
     kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
-        phiA*np*sig^2*gamq(q,aA)^2*gworm(q,np,lp,b)/wA
+        phiA*nA*sig^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA
     )
-    spol(q) = sig^2 * np^2 * gamq(q,aA)^2 * gworm(q,np,lp,b)
+    spol(q) = sig^2 * nA^2 * gamq(q,aA)^2 * gworm(q,lpA,nA,bA)
     gscreen(q) = (4*pi*lB) / (q^2 + kappa2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
-    dgscreen(q) = -(4*pi*lB)^2 * sig^2 * phiA*np/wA * gamq(q,aA)^2 * dgworm(q,np,lp,b) / (q^2 + kappa2(q))^2
-    dspol(q) = sig^2 * np^2 * gamq(q,aA)^2 * dgworm(q,np,lp,b)
+    dgscreen(q) = -(4*pi*lB)^2 * sig^2 * phiA*nA/wA * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA) / (q^2 + kappa2(q))^2
+    dspol(q) = sig^2 * nA^2 * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA)
 
     # From ZGW article on single-chain free energy minimization
     # dfint/dl = (1/4pi^2)∫dq q^2 d(G * S)/dl = (1/4pi^2)∫dq q^2[(dG/dL)*S + (dS/dL)*G]
@@ -72,11 +72,11 @@ end
 
 function fent_adaptive(vars, model::SymmetricCoacervate{AdaptiveChain})
     lp = vars[1]
-    np = model.np
+    dp = model.dp
     b = model.b
 
-    g2 = gamma2(np, lp, b)
-    fent = -1.5*(np*log(1 - g2/np) + log(g2))
+    g2 = gamma2(lp, dp, b)
+    fent = -1.5*(dp*log(1 - g2/dp) + log(g2))
 
     return fent
 end
@@ -86,13 +86,13 @@ function fint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     phiP, phiS = phi
     wP, wS = model.omega
     aP, aS = model.smear
-    np = model.np
+    dp = model.dp
     sig = model.sig
     b = model.b
     lB = model.lB
 
-    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,np,lp,b)/wP)
-    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,np,lp,b)
+    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
+    spol(q) = sig^2 * dp^2 * gamq(q,aP)^2 * gworm(q,lp,dp,b)
     integrand(q) = (lB/pi) * q^2 * spol(q) / (q^2 + kappa2(q))
 
     fint, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER)
@@ -109,12 +109,12 @@ end
 
 function dfent_adaptive(vars, model::SymmetricCoacervate{AdaptiveChain})
     lp = vars[1]
-    np = model.np
+    dp = model.dp
     b = model.b
 
-    g2 = gamma2(np, lp, b)
-    dg2 = dgamma2(np, lp, b)
-    dfent = -1.5*(dg2/g2 - dg2/(1 - g2/np))
+    g2 = gamma2(lp, dp, b)
+    dg2 = dgamma2(lp, dp, b)
+    dfent = -1.5*(dg2/g2 - dg2/(1 - g2/dp))
 
     return dfent
 end
@@ -124,18 +124,18 @@ function dfint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     phiP, phiS = phi
     wP, wS = model.omega
     aP, aS = model.smear
-    np = model.np
     sig = model.sig
+    dp = model.dp
     b = model.b
     lB = model.lB
 
-    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*np*sig^2*gamq(q,aP)^2*gworm(q,np,lp,b)/wP)
-    spol(q) = sig^2 * np^2 * gamq(q,aP)^2 * gworm(q,np,lp,b)
+    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
+    spol(q) = sig^2 * dp^2 * gamq(q,aP)^2 * gworm(q,lp,dp,b)
     gscreen(q) = (4*pi*lB) / (q^2 + kappa2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
-    dgscreen(q) = -sig^2 * phiP*np/wP * gamq(q,aP)^2 * dgworm(q,np,lp,b) * gscreen(q)^2
-    dspol(q) = sig^2 * np^2 * gamq(q,aP)^2 * dgworm(q,np,lp,b)
+    dgscreen(q) = -sig^2 * phiP*dp/wP * gamq(q,aP)^2 * dgworm(q,lp,dp,b) * gscreen(q)^2
+    dspol(q) = sig^2 * dp^2 * gamq(q,aP)^2 * dgworm(q,lp,dp,b)
 
     # From ZGW article on single-chain free energy minimization
     # dfint/dl = (1/4pi^2)∫dq q^2 d(G * S)/dl = (1/4pi^2)∫dq q^2[(dG/dL)*S + (dS/dL)*G]
@@ -157,14 +157,14 @@ end
 
 function dfent_adaptive(vars, model::AsymmetricCoacervate{AdaptiveChain})
     lpA, lpC = vars
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
 
-    g2A = gamma2(nA, lpA, bA)
-    g2C = gamma2(nC, lpC, bC)
+    g2A = gamma2(lpA, nA, bA)
+    g2C = gamma2(lpC, nC, bC)
 
-    dg2A = dgamma2(nA, lpA, bA)
-    dg2C = dgamma2(nC, lpC, bC)
+    dg2A = dgamma2(lpA, nA, bA)
+    dg2C = dgamma2(lpC, nC, bC)
 
     dfentA = -1.5*(dg2A/g2A - dg2A/(1 - g2A/nA))
     dfentC = -1.5*(dg2C/g2C - dg2C/(1 - g2C/nC))
@@ -178,28 +178,28 @@ function dfint_adaptive(phi, vars, model::AsymmetricCoacervate{AdaptiveChain})
     wA, wC, wP, wM = model.omega
     aA, aC, aP, aM = model.smear
     sigA, sigC = model.sig
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
     lB = model.lB
 
     kappa2(q) = (4*pi*lB)*(phiP*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
-        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,nA,lpA,bA)/wA + 
-        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,nC,lpC,bC)/wC
+        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
+        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
     spol(q) = @SVector [
-        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,nA,lpA,bA), 
-        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,nC,lpC,bC)
+        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,lpA,nA,bA), 
+        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,lpC,nC,bC)
     ]
     gscreen(q) = (4*pi*lB) / (q^2 + kappa2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
     dgscreen(q) = @SVector [
-        -(4*pi*lB)^2 * sigA^2 * phiA*nA/wA * gamq(q,aA)^2 * dgworm(q,nA,lpA,bA) / (q^2 + kappa2(q))^2,
-        -(4*pi*lB)^2 * sigC^2 * phiC*nC/wC * gamq(q,aC)^2 * dgworm(q,nC,lpC,bC) / (q^2 + kappa2(q))^2
+        -(4*pi*lB)^2 * sigA^2 * phiA*nA/wA * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA) / (q^2 + kappa2(q))^2,
+        -(4*pi*lB)^2 * sigC^2 * phiC*nC/wC * gamq(q,aC)^2 * dgworm(q,lpC,nC,bC) / (q^2 + kappa2(q))^2
     ]
     dspol(q) = @SVector [
-        sigA^2 * nA^2 * gamq(q,aA)^2 * dgworm(q,nA,lpA,bA),
-        sigC^2 * nC^2 * gamq(q,aC)^2 * dgworm(q,nC,lpC,bC)
+        sigA^2 * nA^2 * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA),
+        sigC^2 * nC^2 * gamq(q,aC)^2 * dgworm(q,lpC,nC,bC)
     ]
 
     # From ZGW article on single-chain free energy minimization
@@ -232,11 +232,11 @@ end
 
 function fent_adaptive(vars, model::AssociationCoacervate{AdaptiveChain})
     _, _, _, _, lpA, lpC = vars
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
 
-    g2A = gamma2(nA, lpA, bA)
-    g2C = gamma2(nC, lpC, bC)
+    g2A = gamma2(lpA, nA, bA)
+    g2C = gamma2(lpC, nC, bC)
 
     fentA = -1.5*(nA*log(1 - g2A/nA) + log(g2A))
     fentC = -1.5*(nC*log(1 - g2C/nC) + log(g2C))
@@ -249,7 +249,7 @@ function fint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     alphaAP, alphaCM, betaA, betaC, lpA, lpC = vars
     wA, wC, wP, wM = model.omega
     aA, aC, aP, aM = model.smear
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
     lB = model.lB
 
@@ -260,12 +260,12 @@ function fint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     phiMF = phiM - (alphaCM*phiC*wM)/wC
 
     kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM + 
-        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,nA,lpA,bA)/wA + 
-        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,nC,lpC,bC)/wC
+        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
+        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
     spol(q) = @SVector [
-        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,nA,lpA,bA), 
-        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,nC,lpC,bC)
+        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,lpA,nA,bA), 
+        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,lpC,nC,bC)
     ]
     integrand(q) = (lB/pi) * q^2 * spol(q) / (q^2 + kappa2(q))
 
@@ -284,14 +284,14 @@ end
 
 function dfent_adaptive(vars, model::AssociationCoacervate{AdaptiveChain})
     _, _, _, _, lpA, lpC = vars
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
 
-    g2A = gamma2(nA, lpA, bA)
-    g2C = gamma2(nC, lpC, bC)
+    g2A = gamma2(lpA, nA, bA)
+    g2C = gamma2(lpC, nC, bC)
 
-    dg2A = dgamma2(nA, lpA, bA)
-    dg2C = dgamma2(nC, lpC, bC)
+    dg2A = dgamma2(lpA, nA, bA)
+    dg2C = dgamma2(lpC, nC, bC)
 
     dfentA = -1.5*(dg2A/g2A - dg2A/(1 - g2A/nA))
     dfentC = -1.5*(dg2C/g2C - dg2C/(1 - g2C/nC))
@@ -304,7 +304,7 @@ function dfint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     alphaAP, alphaCM, betaA, betaC, lpA, lpC = vars
     wA, wC, wP, wM = model.omega
     aA, aC, aP, aM = model.smear
-    nA, nC = model.np
+    nA, nC = model.dp
     bA, bC = model.b
     lB = model.lB
 
@@ -315,23 +315,23 @@ function dfint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     phiMF = phiM - (alphaCM*phiC*wM)/wC
 
     kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM + 
-        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,nA,lpA,bA)/wA + 
-        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,nC,lpC,bC)/wC
+        phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
+        phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
     spol(q) = @SVector [
-        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,nA,lpA,bA), 
-        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,nC,lpC,bC)
+        sigA^2 * nA^2 * gamq(q,aA)^2 * gworm(q,lpA,nA,bA), 
+        sigC^2 * nC^2 * gamq(q,aC)^2 * gworm(q,lpC,nC,bC)
     ]
     gscreen(q) = (4*pi*lB) / (q^2 + kappa2(q))
 
     # Derivatives of the screened potentials and structure factors with lp
     dgscreen(q) = @SVector [
-        -(4*pi*lB)^2 * sigA^2 * phiA*nA/wA * gamq(q,aA)^2 * dgworm(q,nA,lpA,bA) / (q^2 + kappa2(q))^2,
-        -(4*pi*lB)^2 * sigC^2 * phiC*nC/wC * gamq(q,aC)^2 * dgworm(q,nC,lpC,bC) / (q^2 + kappa2(q))^2
+        -(4*pi*lB)^2 * sigA^2 * phiA*nA/wA * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA) / (q^2 + kappa2(q))^2,
+        -(4*pi*lB)^2 * sigC^2 * phiC*nC/wC * gamq(q,aC)^2 * dgworm(q,lpC,nC,bC) / (q^2 + kappa2(q))^2
     ]
     dspol(q) = @SVector [
-        sigA^2 * nA^2 * gamq(q,aA)^2 * dgworm(q,nA,lpA,bA),
-        sigC^2 * nC^2 * gamq(q,aC)^2 * dgworm(q,nC,lpC,bC)
+        sigA^2 * nA^2 * gamq(q,aA)^2 * dgworm(q,lpA,nA,bA),
+        sigC^2 * nC^2 * gamq(q,aC)^2 * dgworm(q,lpC,nC,bC)
     ]
 
     # From ZGW article on single-chain free energy minimization

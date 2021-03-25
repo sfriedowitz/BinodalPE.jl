@@ -22,7 +22,7 @@ mutable struct AssociationCoacervate{TC <: AbstractChainStructure} <: AbstractMo
     sig      :: SVector{2,Float64}
     dg       :: SVector{3,Float64}
     chi      :: SVector{3,Float64}
-    np       :: SVector{2,Float64}
+    dp       :: SVector{2,Float64}
     b        :: SVector{2,Float64}
     lp       :: SVector{2,Float64}
     lB       :: Float64
@@ -34,14 +34,14 @@ function AssociationCoacervate(; structure::Type{<:AbstractChainStructure}, kwar
     sig = get(kwargs, :sig, [1.0, 1.0])
     dg = get(kwargs, :dg, [0.0, 0.0, 0.0])
     chi = get(kwargs, :chi, [0.0, 0.0, 0.0])
-    np = get(kwargs, :np, [100.0, 100.0])
+    dp = get(kwargs, :dp, [100.0, 100.0])
     b = get(kwargs, :b, [1.0, 1.0])
     lp = get(kwargs, :lp, [1.0, 1.0])
     lB = get(kwargs, :lB, lBbar)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = AssociationCoacervate{structure}(zeros(4), omega, smear, sig, dg, chi, np, b, lp, lB, vargs)
+    model = AssociationCoacervate{structure}(zeros(4), omega, smear, sig, dg, chi, dp, b, lp, lB, vargs)
     return model
 end
 
@@ -115,7 +115,7 @@ function varinit(phi, model::AssociationCoacervate{TC}) where TC
     wA, wC, wP, wM = model.omega
     dgAP, dgCM, dgIP = model.dg
     bA, bC = model.b
-    nA, nC = model.np
+    nA, nC = model.dp
 
     mu_ap, mu_cm, mu_ip = muel_association(phi, [0.5, 0.5, 0.5, 0.5, bA, bC], model)
     kAP = exp(-dgAP - mu_ap + 1)
@@ -147,8 +147,8 @@ function varinit(phi, model::AssociationCoacervate{TC}) where TC
         end
     end
 
-    alphaAP0 = clamp(alphaAP0, 1e-14, 0.9999)
-    alphaCM0 = clamp(alphaCM0, 1e-14, 0.9999)
+    alphaAP0 = clamp(alphaAP0, 1e-14, 0.999)
+    alphaCM0 = clamp(alphaCM0, 1e-14, 0.999)
 
     # Ion pairing extents
     betaA = (1-alphaAP0)*phiA/wA

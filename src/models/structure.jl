@@ -21,19 +21,19 @@ abstract type SphericalGlobule <: AbstractChainStructure end
  
 #==============================================================================#
 
-struct ChainStructure{TC <: AbstractChainStructure}
-	np :: Float64
-	lp :: Float64
-	b  :: Float64
+struct ChainStructure{TC <: AbstractChainStructure, TF <: Real}
 	w  :: Float64
+	dp :: Float64
+	b  :: Float64
+	lp :: TF
 end
 
 gchain(chain::ChainStructure{<:Union{PointLike,SmearedPoint}}, q) = 1.0
 
-gchain(chain::ChainStructure{SphericalGlobule}, q) = gsphere(q * ((3/(4pi)) * chain.w * chain.np)^(1/3))
+gchain(chain::ChainStructure{SphericalGlobule}, q) = gsphere(q * ((3/(4pi)) * chain.w * chain.dp)^(1/3))
 
-gchain(chain::ChainStructure{GaussianCoil}, q) = gcoil(q^2 * (chain.np * chain.b^2 / 6.0))
+gchain(chain::ChainStructure{GaussianCoil}, q) = gcoil(q^2 * (chain.dp * chain.b^2 / 6.0))
 
-gchain(chain::ChainStructure{RodLike}, q) = grod(q * chain.np * chain.b)
+gchain(chain::ChainStructure{RodLike}, q) = grod(q * chain.dp * chain.b)
 
-gchain(chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}, q) = gworm(q, chain.np, chain.lp, chain.b)
+gchain(chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}, q) = gworm(q, chain.lp, chain.dp, chain.b)

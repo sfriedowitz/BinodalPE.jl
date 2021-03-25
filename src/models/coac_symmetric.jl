@@ -8,8 +8,8 @@ mutable struct SymmetricCoacervate{TC <: AbstractChainStructure} <: AbstractMode
     omega  :: SVector{2,Float64}
     smear  :: SVector{2,Float64}
     sig    :: Float64
-    np     :: Float64
     chi    :: Float64
+    dp     :: Float64
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
@@ -19,23 +19,23 @@ end
 function SymmetricCoacervate(; structure::Type{<:AbstractChainStructure}, kwargs...)
     omega = get(kwargs, :omega, [1.0, 1.0])
     sig = get(kwargs, :sig, 1.0)
-    np = get(kwargs, :np, 100)
     chi = get(kwargs, :chi, 0.0)
+    dp = get(kwargs, :dp, 100)
     b = get(kwargs, :b, 1.0)
     lp = get(kwargs, :lp, 1.0)
     lB = get(kwargs, :lB, lBbar)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = SymmetricCoacervate{structure}(zeros(2), omega, smear, sig, np, chi, b, lp, lB, vargs)
+    model = SymmetricCoacervate{structure}(zeros(2), omega, smear, sig, chi, dp, b, lp, lB, vargs)
     return model
 end
 
 #==============================================================================#
 
-chain_structures(model::SymmetricCoacervate{TC}) where TC = ChainStructure{TC}(model.np, model.lp, model.b, model.omega[1])
+chainstructs(model::SymmetricCoacervate{TC}) where TC = ChainStructure{TC}(model.dp, model.lp, model.b, model.omega[1])
 
-chain_structures(model::SymmetricCoacervate{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, vars[1], model.b, model.omega[1])
+chainstructs(model::SymmetricCoacervate{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.dp, vars[1], model.b, model.omega[1])
 
 ftotal(phi, model::SymmetricCoacervate) = ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, model)
 

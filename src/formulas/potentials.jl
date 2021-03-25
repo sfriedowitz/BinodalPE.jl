@@ -9,20 +9,19 @@ muel_association(phi, vars, model::SinglePolyion{ExtendedPoint}) = model.lB*kbar
 function muel_association(phi, vars, model::SinglePolyion)
     phiA, phiP, phiM = phi
     wA, wP, wM = model.omega
-    np = model.np
-    b = model.b
+    nA = model.dp
     lB = model.lB
 
     # Derived parameters
     alpha = vars[1]
-    sig = 1 - alpha
-    pol = chain_structures(model, vars)
+    sigA = 1 - alpha
+    chain = chainstructs(model, vars)
 
     # Integration function
     function integrand(q)
-        gA = gchain(pol, q)
+        gA = gchain(chain, q)
         smA, smP, smM = gamq.(q, model.smear)
-        -(lB/pi)*(smP^2 + 2*np*sig*smA^2*gA)/(1 + kappa2(q, phi, vars, model)/q^2)
+        -(lB/pi)*(smP^2 + 2*nA*sigA*smA^2*gA)/(1 + kappa2(q, phi, vars, model)/q^2)
     end
 
     pot, _ = quadgk(integrand, 0.0, Inf, order = QGK_ORDER, maxevals = 100)
@@ -36,8 +35,7 @@ end
 function muel_association(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
-    nA, nC = model.np
-    bA, bC = model.b
+    nA, nC = model.dp
     lB = model.lB
 
     # Derived parameters
@@ -45,11 +43,11 @@ function muel_association(phi, vars, model::AssociationCoacervate)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
 
-    apol, cpol = chain_structures(model, vars)
+    achain, cchain = chainstructs(model, vars)
 
     # Integration functions
     function integrand(q)
-        gA, gC = gchain(apol, q), gchain(cpol, q)
+        gA, gC = gchain(achain, q), gchain(cchain, q)
         smA, smC, smP, smM = gamq.(q, model.smear)
 
         num_ap = -(lB/pi)*(smP^2 + 2*nA*sigA*smA^2*gA)

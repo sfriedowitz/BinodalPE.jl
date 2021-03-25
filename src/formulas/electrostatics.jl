@@ -60,7 +60,7 @@ end
 function kbar(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
-    nA, nC = model.np
+    nA, nC = model.dp
     lB = model.lB
 
     # Derived parameters
@@ -80,7 +80,7 @@ kappa2(q, phi, vars, model::AbstractModel) = notimpl("kappa2", typeof(model))
 function kappa2(q, phi, vars, model::SinglePolyion)
 	phiA, phiP, phiM = phi
     wA, wP, wM = model.omega
-    nA = model.np
+    nA = model.dp
     lB = model.lB
 
     # Derived parameters
@@ -89,7 +89,7 @@ function kappa2(q, phi, vars, model::SinglePolyion)
     phiPF = phiP - alpha*phiA*wP/wA
 
     smA, smP, smM = gamq.(q, model.smear)
-    chain = chain_structures(model, vars)
+    chain = chainstructs(model, vars)
     gA = gchain(chain, q)
 
 	return (4*pi*lB)*(phiM*smM^2/wM + phiPF*smP^2/wP + phiA*nA*sigA^2*smA^2*gA/wA)
@@ -99,26 +99,26 @@ function kappa2(q, phi, vars, model::SymmetricCoacervate)
     phiP, phiS = phi
     wP, wS = model.omega
     sig = model.sig
-    np = model.np
+    nP = model.dp
     lB = model.lB
 
     # Derived parameters
-    chain = chain_structures(model, vars)
+    chain = chainstructs(model, vars)
     gP = gchain(chain, q)
 	smP, smS = gamq.(q, model.smear)
 
-	return (4*pi*lB)*(phiS*smS^2/wS + phiP*np*sig^2*smP^2*gP/wP)
+	return (4*pi*lB)*(phiS*smS^2/wS + phiP*nP*sig^2*smP^2*gP/wP)
 end
 
 function kappa2(q, phi, vars, model::AsymmetricCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
     sigA, sigC = model.sig
-    nA, nC = model.np
+    nA, nC = model.dp
     lB = model.lB
 
     # Derived parameters
-    chains = chain_structures(model, vars)
+    chains = chainstructs(model, vars)
     gA, gC = gchain.(chains, q)
     smA, smC, smP, smM = gamq.(q, model.smear)
 
@@ -128,7 +128,7 @@ end
 function kappa2(q, phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     wA, wC, wP, wM = model.omega
-    nA, nC = model.np
+    nA, nC = model.dp
     lB = model.lB
 
     # Derived parameters
@@ -138,7 +138,7 @@ function kappa2(q, phi, vars, model::AssociationCoacervate)
     phiPF = phiP - (alphaAP*phiA*wP)/wA
     phiMF = phiM - (alphaCM*phiC*wM)/wC
 
-    chains = chain_structures(model, vars)
+    chains = chainstructs(model, vars)
     gA, gC = gchain.(chains, q)
     smA, smC, smP, smM = gamq.(q, model.smear)
 

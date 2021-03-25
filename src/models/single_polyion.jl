@@ -14,8 +14,8 @@ mutable struct SinglePolyion{TC <: AbstractChainStructure} <: AbstractModel{TC}
     smear  :: SVector{3,Float64}
     sig    :: Float64
     dg     :: Float64
-    np     :: Float64
     chi    :: Float64
+    dp     :: Float64
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
@@ -26,23 +26,23 @@ function SinglePolyion(; structure::Type{<:AbstractChainStructure}, kwargs...)
     omega = get(kwargs, :omega, [1.0, 1.0, 1.0])
     sig = get(kwargs, :sig, 1.0)
     dg = get(kwargs, :dg, 0.0)
-    np = get(kwargs, :np, 100)
     chi = get(kwargs, :chi, 0.0)
+    dp = get(kwargs, :dp, 100)
     b = get(kwargs, :b, 1.0)
     lp = get(kwargs, :lp, 1.0)
     lB = get(kwargs, :lB, lBbar)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = SinglePolyion{structure}(zeros(3), omega, smear, sig, dg, np, chi, b, lp, lB, vargs)
+    model = SinglePolyion{structure}(zeros(3), omega, smear, sig, dg, chi, dp, b, lp, lB, vargs)
     return model
 end
 
 #==============================================================================#
 
-chain_structures(model::SinglePolyion{TC}) where TC = ChainStructure{TC}(model.np, model.lp, model.b, model.omega[1])
+chainstructs(model::SinglePolyion{TC}) where TC = ChainStructure{TC, typeof(model.dp)}(model.omega[1], model.dp, model.b, model.lp)
 
-chain_structures(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.np, vars[2], model.b, model.omega[1])
+chainstructs(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[1], model.dp, model.b, vars[2])
 
 function neutralbulk(phi, model::SinglePolyion)
     sig = model.sig
@@ -135,7 +135,7 @@ function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion{AdaptiveChain
     dg = model.dg
 
     vars = varunscale(x, model)
-    alpha, lp = vars
+    alpha, _ = vars
 
     phiPF = phiP - alpha*phiA*wP/wA
     sig = 1 - alpha
