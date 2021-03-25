@@ -26,7 +26,7 @@ the structural and energetic properties of salt and polyelectrolyte species,
 including polymer chain lengths, charge densities, and monomer volumes.
 These include: 
 * `omega` - The normalized monomer volume of a species
-* `np` - The chain length of a polymer
+* `dp` - The degree of polymerization of a polymer
 * `sig` - The linear charge density of a polymer
 * `chi` - The Flory-Huggins parameter between polymer and solvent
 * `b` - The normalized segment length of a polymer
@@ -75,13 +75,13 @@ Examples of these general procedures are shown below.
 ```julia
 julia> using BinodalPE 
 
-julia> model_single = SinglePolyion(structure = GaussianCoil, omega = [5, 5, 1], np = 100, sig = 1.0, dg = -5)
+julia> model_single = SinglePolyion(structure = GaussianCoil, omega = [5, 5, 1], dp = 100, sig = 1.0, dg = -5)
 
-julia> model_symm = SymmetricCoacervate(structure = RodLike, omega = [5, 1], np = 1000, sig = 0.5)
+julia> model_symm = SymmetricCoacervate(structure = RodLike, omega = [5, 1], dp = 1000, sig = 0.5)
 
-julia> modle_asymm = AsymmetricCoacervate(structure = WormLike, omega = [5, 5, 1, 1], np = [100, 100], sig = [0.5, 0.5], lp = [10, 10])
+julia> modle_asymm = AsymmetricCoacervate(structure = WormLike, omega = [5, 5, 1, 1], dp = [100, 100], sig = [0.5, 0.5], lp = [10, 10])
 
-julia> model_assoc = AssociationCoacervate(structure = AdaptiveChain, omega = [5, 5, 1, 1], np = [100, 100], dg = [-4, -4, -8])
+julia> model_assoc = AssociationCoacervate(structure = AdaptiveChain, omega = [5, 5, 1, 1], dp = [100, 100], dg = [-4, -4, -8])
 ```
 
 ### Evaluate a model
@@ -89,7 +89,7 @@ julia> model_assoc = AssociationCoacervate(structure = AdaptiveChain, omega = [5
 ```julia
 julia> using BinodalPE
 
-julia> model = SinglePolyion(structure = GaussianCoil, omega = [5, 1, 1], np = 100, dg = -5)
+julia> model = SinglePolyion(structure = GaussianCoil, omega = [5, 1, 1], dp = 100, dg = -5)
 
 julia> phi = [1e-4, 1.1e-3, 1e-3] # Volume fractions of polyanions, cations, and anions
 
@@ -112,7 +112,7 @@ julia> varsolve(phi, model) # Solve for the binding fraction of counterions on t
 ```julia
 julia> using BinodalPE
 
-julia> model = SymmetricCoacervate(structure = GaussianCoil, np = 100, sig = 0.25, omega = [1, 1])
+julia> model = SymmetricCoacervate(structure = GaussianCoil, dp = 100, sig = 0.25, omega = [1, 1])
 SymmetricCoacervate{GaussianCoil}(bulk = [0.0, 0.0])
 
 julia> phi = [0.01, 0.025]
