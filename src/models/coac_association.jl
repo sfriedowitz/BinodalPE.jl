@@ -80,16 +80,16 @@ varunscale(x, model::AssociationCoacervate) = [exp(v)/(1 + exp(v)) for v in x]
 function varscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
     for i = 1:4; new[i] = log(x[i]/(1-x[i])); end
-    new[5] = log(x[4])
-    new[6] = log(x[5])
+    new[5] = log(x[5])
+    new[6] = log(x[6])
     return new
 end
 
 function varunscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
     for i = 1:4; new[i] = exp(x[i])/(1+exp(x[i]));  end
-    new[5] = exp(x[4])
-    new[6] = exp(x[5])
+    new[5] = exp(x[5])
+    new[6] = exp(x[6])
     return new
 end
 
@@ -147,8 +147,8 @@ function varinit(phi, model::AssociationCoacervate{TC}) where TC
         end
     end
 
-    alphaAP0 = clamp(alphaAP0, 1e-14, 0.999)
-    alphaCM0 = clamp(alphaCM0, 1e-14, 0.999)
+    alphaAP0 = clamp(alphaAP0, 1e-6, 0.999)
+    alphaCM0 = clamp(alphaCM0, 1e-6, 0.999)
 
     # Ion pairing extents
     betaA = (1-alphaAP0)*phiA/wA
@@ -198,7 +198,6 @@ function varf!(F, x, phi, model::AssociationCoacervate)
    
     vars = varunscale(x, model)
     alphaAP, alphaCM, betaA, betaC = vars
-    #betaC = other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA)
 
     phiPF = phiP - alphaAP*phiA*wP/wA
     phiMF = phiM - alphaCM*phiC*wM/wC
@@ -223,7 +222,6 @@ function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
 
     vars = varunscale(x, model)
     alphaAP, alphaCM, betaA, betaC, lpA, lpC = vars
-    #betaC = other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA)
 
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)

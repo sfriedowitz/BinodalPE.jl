@@ -28,12 +28,12 @@ struct ChainStructure{TC <: AbstractChainStructure, TF <: Real}
 	lp :: TF
 end
 
-gchain(chain::ChainStructure{<:Union{PointLike,SmearedPoint}}, q) = 1.0
+gchain(q, chain::ChainStructure{<:Union{PointLike,SmearedPoint}}) = 1.0
 
-gchain(chain::ChainStructure{SphericalGlobule}, q) = gsphere(q * ((3/(4pi)) * chain.w * chain.dp)^(1/3))
+gchain(q, chain::ChainStructure{SphericalGlobule}) = gsphere(q * ((3/(4pi)) * chain.w * chain.dp)^(1/3))
 
-gchain(chain::ChainStructure{GaussianCoil}, q) = gcoil(q^2 * (chain.dp * chain.b^2 / 6.0))
+gchain(q, chain::ChainStructure{GaussianCoil}) = gcoil(q^2 * (chain.dp * chain.b^2 / 6.0))
 
-gchain(chain::ChainStructure{RodLike}, q) = grod(q * chain.dp * chain.b)
+gchain(q, chain::ChainStructure{RodLike}) = grod(q * chain.dp * chain.b)
 
-gchain(chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}, q) = gworm(q, chain.lp, chain.dp, chain.b)
+gchain(q, chain::ChainStructure{<:Union{WormLike,AdaptiveChain}}) = gworm(q, chain.lp, chain.dp, chain.b)

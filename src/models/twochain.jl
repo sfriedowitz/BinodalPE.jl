@@ -49,8 +49,8 @@ function chainstructs(model::TwoChainModel{TC}) where TC
 end
 
 function chainstructs(model::TwoChainModel{AdaptiveChain}, vars)
-    achain = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[1], model.dp[1], model.b[1], model.lp[1])
-    cchain = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[2], model.dp[2], model.b[2], model.lp[2])
+    achain = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[1], model.dp[1], model.b[1], vars[end-1])
+    cchain = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[2], model.dp[2], model.b[2], vars[end])
     return (achain, cchain)
 end
 

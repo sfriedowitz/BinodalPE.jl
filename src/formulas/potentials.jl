@@ -1,4 +1,4 @@
-#==============================================================================#
+ #==============================================================================#
 # Single polyion system
 #==============================================================================#
 
@@ -19,7 +19,7 @@ function muel_association(phi, vars, model::SinglePolyion)
 
     # Integration function
     function integrand(q)
-        gA = gchain(chain, q)
+        gA = gchain(q, chain)
         smA, smP, smM = gamq.(q, model.smear)
         -(lB/pi)*(smP^2 + 2*nA*sigA*smA^2*gA)/(1 + kappa2(q, phi, vars, model)/q^2)
     end
@@ -43,11 +43,11 @@ function muel_association(phi, vars, model::AssociationCoacervate)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
 
-    achain, cchain = chainstructs(model, vars)
+    chains = chainstructs(model, vars)
 
     # Integration functions
     function integrand(q)
-        gA, gC = gchain(achain, q), gchain(cchain, q)
+        gA, gC = gchain.(q, chains)
         smA, smC, smP, smM = gamq.(q, model.smear)
 
         num_ap = -(lB/pi)*(smP^2 + 2*nA*sigA*smA^2*gA)
