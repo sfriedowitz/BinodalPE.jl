@@ -26,9 +26,9 @@ the structural and energetic properties of salt and polyelectrolyte species,
 including polymer chain lengths, charge densities, and monomer volumes.
 These include: 
 * `omega` - The normalized monomer volume of a species
-* `dp` - The degree of polymerization of a polymer
 * `sig` - The linear charge density of a polymer
 * `chi` - The Flory-Huggins parameter between polymer and solvent
+* `dp` - The degree of polymerization of a polymer
 * `b` - The normalized segment length of a polymer
 * `lp` - The reference persistence length of a semi-flexible polymer (only used for worm-like chains)
 * `dg` - Short-range binding energy for models with reversible binding (`SinglePolyion` and `AssociationCoacervate`)
