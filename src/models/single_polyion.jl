@@ -52,11 +52,6 @@ function neutralbulk(phi, model::SinglePolyion)
     return [phi[1], phi[2] + counter, phi[2]]
 end
 
-function ftranslational(phi, model::SinglePolyion)
-    assoc = varsolve(phi, model)
-    return ftranslational(phi, assoc, model)
-end
-
 function ftotal(phi, model::SinglePolyion)
     assoc = varsolve(phi, model; model.vargs...)
 

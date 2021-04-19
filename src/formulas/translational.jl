@@ -2,6 +2,11 @@
 # Translational
 #==============================================================================#
 
+function ftranslational(phi, model::SinglePolyion)
+    assoc = varsolve(phi, model)
+    return ftranslational(phi, assoc, model)
+end
+
 function ftranslational(phi, vars, model::SinglePolyion)
     phiA, phiP, phiM = phi
     phiW = 1-sum(phi)
