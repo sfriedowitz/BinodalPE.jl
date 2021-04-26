@@ -33,9 +33,9 @@ end
 
 #==============================================================================#
 
-chainstructs(model::SymmetricCoacervate{TC}) where TC = ChainStructure{TC}(model.dp, model.lp, model.b, model.omega[1])
+chainstructs(model::SymmetricCoacervate{TC}) where TC = ChainStructure{TC,eltype(model.dp)}(model.omega[1], model.dp, model.b, model.lp)
 
-chainstructs(model::SymmetricCoacervate{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.dp, vars[1], model.b, model.omega[1])
+chainstructs(model::SymmetricCoacervate{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain}(model.omega[1], model.dp, model.b, vars[1])
 
 ftotal(phi, model::SymmetricCoacervate) = ftranslational(phi, model) + fchi(phi, model) + felectrostatic(phi, model)
 
