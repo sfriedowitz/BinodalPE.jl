@@ -104,8 +104,8 @@ function valid_variational(xs, phi, model::AssociationCoacervate)
     alphaAP = exp(xs[1]) / (1 + exp(xs[1]))
     alphaCM = exp(xs[2]) / (1 + exp(xs[2]))
     
-    phiPF = phiP - alphaAP*phiA*wP/wA
-    phiMF = phiM - alphaCM*phiC*wM/wC
+    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
     
     return (0.0 < phiPF < 1.0) && (0.0 < phiMF < 1.0)   
 end
@@ -118,8 +118,8 @@ function varinit(phi, model::AssociationCoacervate{TC}) where TC
     nA, nC = model.dp
 
     mu_ap, mu_cm, mu_ip = muel_association(phi, [0.5, 0.5, 0.5, 0.5, bA, bC], model)
-    kAP = exp(-dgAP - mu_ap + 1)
-    kCM = exp(-dgCM - mu_cm + 1)
+    kAP = exp(-dgAP - z*mu_ap + 1)
+    kCM = exp(-dgCM - z*mu_cm + 1)
     kIP = exp(-dgIP - mu_ip + 1)
 
     # Guess for alphaAP
@@ -199,16 +199,19 @@ function varf!(F, x, phi, model::AssociationCoacervate)
     vars = varunscale(x, model)
     alphaAP, alphaCM, betaA, betaC = vars
 
-    phiPF = phiP - alphaAP*phiA*wP/wA
-    phiMF = phiM - alphaCM*phiC*wM/wC
+    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
     
     # Electrostatic exchange potentials
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     
-    F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
-    F[2] = log(alphaCM/(sigC*phiMF)) + dgCM + mu_cm - 1
+    # these definions are functionally identical to F[1] and F[2], below, but cause the results to differ from the master code due to different groupings of floating point calcs.
+    #F[1] = log((alphaAP/sigA)^z/phiPF) + dgAP + z*mu_ap - 1
+    #F[2] = log((alphaCM/sigC)^z/phiMF) + dgCM + z*mu_cm - 1
+    F[1] = log(alphaAP^z/(sigA^z*phiPF)) + dgAP + z*mu_ap - 1
+    F[2] = log(alphaCM^z/(sigC^z*phiMF)) + dgCM + z*mu_cm - 1    
     F[3] = log(exp(1.0) * (betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
     F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
 
@@ -225,15 +228,17 @@ function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
 
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - alphaAP*phiA*wP/wA
-    phiMF = phiM - alphaCM*phiC*wM/wC
+    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
     
     # Electrostatic exchange potentials
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     dfA, dfC = dftot_adaptive(phi, vars, model)
     
-    F[1] = log(alphaAP/(sigA*phiPF)) + dgAP + mu_ap - 1
-    F[2] = log(alphaCM/(sigC*phiMF)) + dgCM + mu_cm - 1
+    #F[1] = log((alphaAP/sigA)^z/phiPF) + dgAP + z*mu_ap - 1
+    #F[2] = log((alphaCM/sigC)^z/phiMF) + dgCM + z*mu_cm - 1
+    F[1] = log(alphaAP^z/(sigA^z*phiPF)) + dgAP + z*mu_ap - 1
+    F[2] = log(alphaCM^z/(sigC^z*phiMF)) + dgCM + z*mu_cm - 1    
     F[3] = log((betaC*exp(1.0)*wA)/(1-betaC)/(sigA*phiA)/(wA+wC)) + dgIP + mu_bc - 1
     F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
     F[5] = dfA
