@@ -39,9 +39,9 @@ function dfint_adaptive(phi, vars, model::SinglePolyion{AdaptiveChain})
 
     # Derived parameters
     sig = 1 - alpha
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(z*wA)
 
-    kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
+    kappa2(q) = (4*pi*lB)*(z^2*phiPF*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
         phiA*nA*sig^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA
     )
     spol(q) = sig^2 * nA^2 * gamq(q,aA)^2 * gworm(q,lpA,nA,bA)
@@ -91,7 +91,7 @@ function fint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     b = model.b
     lB = model.lB
 
-    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
+    kappa2(q) = (4*pi*lB)*(z^2*phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
     spol(q) = sig^2 * dp^2 * gamq(q,aP)^2 * gworm(q,lp,dp,b)
     integrand(q) = (lB/pi) * q^2 * spol(q) / (q^2 + kappa2(q))
 
@@ -129,7 +129,7 @@ function dfint_adaptive(phi, vars, model::SymmetricCoacervate{AdaptiveChain})
     b = model.b
     lB = model.lB
 
-    kappa2(q) = (4*pi*lB)*(phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
+    kappa2(q) = (4*pi*lB)*(z^2*phiS*gamq(q,aS)^2/wS + phiP*dp*sig^2*gamq(q,aP)^2*gworm(q,lp,dp,b)/wP)
     spol(q) = sig^2 * dp^2 * gamq(q,aP)^2 * gworm(q,lp,dp,b)
     gscreen(q) = (4*pi*lB) / (q^2 + kappa2(q))
 
@@ -182,7 +182,7 @@ function dfint_adaptive(phi, vars, model::AsymmetricCoacervate{AdaptiveChain})
     bA, bC = model.b
     lB = model.lB
 
-    kappa2(q) = (4*pi*lB)*(phiP*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM + 
+    kappa2(q) = (4*pi*lB)*(z^2*(phiP*gamq(q,aP)^2/wP + phiM*gamq(q,aM)^2/wM) + 
         phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
         phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
@@ -256,10 +256,10 @@ function fint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     # Derived parameters
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - (alphaAP*phiA*wP)/wA
-    phiMF = phiM - (alphaCM*phiC*wM)/wC
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
 
-    kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM + 
+    kappa2(q) = (4*pi*lB)*(z^2*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM) + 
         phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
         phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
@@ -311,10 +311,10 @@ function dfint_adaptive(phi, vars, model::AssociationCoacervate{AdaptiveChain})
     # Derived parameters
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - (alphaAP*phiA*wP)/wA
-    phiMF = phiM - (alphaCM*phiC*wM)/wC
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
 
-    kappa2(q) = (4*pi*lB)*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM + 
+    kappa2(q) = (4*pi*lB)*(z^2*(phiPF*gamq(q,aP)^2/wP + phiMF*gamq(q,aM)^2/wM) + 
         phiA*nA*sigA^2*gamq(q,aA)^2*gworm(q,lpA,nA,bA)/wA + 
         phiC*nC*sigC^2*gamq(q,aC)^2*gworm(q,lpC,nC,bC)/wC
     )
