@@ -48,7 +48,7 @@ function neutralbulk(phi, model::SinglePolyion)
     sig = model.sig
     wA, wP, wM = model.omega
     
-    counter = sig * phi[1] * wP / wA
+    counter = sig * phi[1] * wP / (wA*z)
     return [phi[1], phi[2] + counter, phi[2]]
 end
 
@@ -88,7 +88,7 @@ function varinit(phi, model::SinglePolyion)
     b = model.b
 
     muel = muel_association(phi, [0.5, 2.5], model)
-    kA = exp(-dg - muel + 1)
+    kA = exp(-dg - z*muel + 1)
 
     if phiP < 1e-10 # To avoid roundoff error
         alpha0 = phiP*kA - 2*(phiP*kA)^2
@@ -115,11 +115,11 @@ function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion) where TF
     dg = model.dg
 
     alpha = exp(x[1])/ (1 + exp(x[1]))
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(wA*z)
     sig = 1 - alpha
 
     muel = muel_association(phi, [alpha], model)
-    F[1] = log(alpha/(1-alpha)/phiPF) + dg + muel - 1
+    F[1] = log((alpha/(1-alpha))^z/phiPF) + dg + z*muel - 1
 
     return nothing
 end
@@ -132,13 +132,13 @@ function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion{AdaptiveChain
     vars = varunscale(x, model)
     alpha, _ = vars
 
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(wA*z)
     sig = 1 - alpha
 
     muel = muel_association(phi, vars, model)
     dftot = dftot_adaptive(phi, vars, model)
 
-    F[1] = log(alpha/(1-alpha)/phiPF) + dg + muel - 1
+    F[1] = log((alpha/(1-alpha))^z/phiPF) + dg + z*muel - 1
     F[2] = dftot
 
     return nothing
