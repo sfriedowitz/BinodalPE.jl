@@ -47,7 +47,7 @@ function fbinding(phi, vars, model::AssociationCoacervate)
     dgAP, dgCM, dgIP = model.dg
     wA, wC, wP, wM = model.omega
 
-    return (alphaAP*phiA*dgAP)/wA + (alphaCM*phiC*dgCM)/wC + (betaC*(1-alphaCM)*phiC*dgIP)/wC
+    return (alphaAP*phiA*dgAP)/(wA*z) + (alphaCM*phiC*dgCM)/(wC*z) + (betaC*(1-alphaCM)*phiC*dgIP)/wC
 end
 
 #==============================================================================#
