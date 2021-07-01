@@ -14,7 +14,7 @@ function ftranslational(phi, vars, model::SinglePolyion)
     wA, wP, wM = model.omega
     nA = model.dp
 
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(wA*z)
 
     return (phiA/wA/nA)*log(phiA) + (phiPF/wP)log(phiPF) + (phiM/wM)*log(phiM) + phiW*log(phiW)
 end
@@ -55,8 +55,8 @@ function ftranslational(phi, assoc, model::AssociationCoacervate)
     nA, nC = model.dp
 
     # Association adjusted fractions
-    phiPF = phiP - (alphaAP*phiA*wP)/wA    
-    phiMF = phiM - (alphaCM*phiC*wM)/wC
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)    
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
     phiAB = phiA
     phiCB = phiC
 
