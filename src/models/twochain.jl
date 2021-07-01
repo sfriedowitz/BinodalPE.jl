@@ -20,8 +20,8 @@ function neutralbulk(phi, model::TwoChainModel)
 
     phiPS = phi[3] * wP / wS
     phiMS = phi[3] * wM / wS
-    phiPC = sigA0 * phi[1] * wP / wA
-    phiMC = sigC0 * phi[2] * wM / wC
+    phiPC = sigA0 * phi[1] * wP / (wA*z)
+    phiMC = sigC0 * phi[2] * wM / (wC*z)
     
     return [phi[1], phi[2], phiPS + phiPC, phiMS + phiMC]
 end
@@ -33,7 +33,7 @@ function differencebulk(phi, model)
 
     chargeA = sigA*phiA/wA
     chargeC = sigC*phiC/wC
-    diff = abs(chargeA - chargeC)
+    diff = abs(chargeA - chargeC)/z
 
     if chargeA > chargeC
         return [phiA, phiC, phiS + wP*diff, phiS]
@@ -90,14 +90,14 @@ function bndlstate(x, model::TwoChainModel)
         sigA, sigC = model.sig
         
         # Derive dense phase params
-        phiPC = wP/(wP+wM) - wP*(phiAC + phiCC + phiWC)/(wP+wM) + sigA*phiAC*(wM*wP/(wA*(wP+wM))) - sigC*phiCC*(wM*wP/(wC*(wP+wM)))
+        phiPC = wP/(wP+wM) - wP*(phiAC + phiCC + phiWC)/(wP+wM) + sigA*phiAC*(wM*wP/(z*wA*(wP+wM))) - sigC*phiCC*(wM*wP/(z*wC*(wP+wM)))
         phiMC = 1 - phiAC - phiCC - phiPC - phiWC
         
         # Derive supernatant phase params
         phiAS = (phiAB - nu*phiAC)/(1 - nu)
         phiCS = (phiCB - nu*phiCC)/(1 - nu)
         phiWS = (phiWB - nu*phiWC)/(1 - nu)
-        phiPS = wP/(wP+wM) - wP*(phiAS + phiCS + phiWS)/(wP+wM) + sigA*phiAS*(wM*wP/(wA*(wP+wM))) - sigC*phiCS*(wM*wP/(wC*(wP+wM)))
+        phiPS = wP/(wP+wM) - wP*(phiAS + phiCS + phiWS)/(wP+wM) + sigA*phiAS*(wM*wP/(z*wA*(wP+wM))) - sigC*phiCS*(wM*wP/(z*wC*(wP+wM)))
         phiMS = 1 - phiAS - phiCS - phiPS - phiWS
 
         # Update state struct
@@ -143,11 +143,11 @@ function bndlf!(F, xs, model::TwoChainModel; scaled::Bool = false)
 
     F[1] = muS[1] - muC[1] + sigA*psi/wA
     F[2] = muS[2] - muC[2] - sigC*psi/wC
-    F[3] = muS[3] - muC[3] - psi/wP
-    F[4] = muS[4] - muC[4] + psi/wM
+    F[3] = muS[3] - muC[3] - z*psi/wP
+    F[4] = muS[4] - muC[4] + z*psi/wM
     F[5] = pS - pC
-    F[6] = sigC*phiCS/wC - sigA*phiAS/wA + phiPS/wP - phiMS/wM
-    F[7] = sigC*phiCC/wC - sigA*phiAC/wA + phiPC/wP - phiMC/wM
+    F[6] = sigC*phiCS/wC - sigA*phiAS/wA + z*phiPS/wP - z*phiMS/wM
+    F[7] = sigC*phiCC/wC - sigA*phiAC/wA + z*phiPC/wP - z*phiMC/wM
     F[8] = phiAB - (1 - nu)*phiAS - nu*phiAC
     F[9] = phiCB - (1 - nu)*phiCS - nu*phiCC
     F[10] = phiPB - (1 - nu)*phiPS - nu*phiPC
@@ -167,7 +167,7 @@ function bndlj!(J, xs, model::TwoChainModel; scaled::Bool = false)
     
     sup = [phiAS, phiCS, phiPS, phiMS]
     coac = [phiAC, phiCC, phiPC, phiMC]
-    sig = [-model.sig[1], model.sig[2], 1.0, -1.0]
+    sig = [-model.sig[1], model.sig[2], z, -z]
     omega = model.omega
 
     # Fill the Jacobian, J = ∂F(x)/∂x
