@@ -34,9 +34,9 @@ function kbar(phi, vars, model::SinglePolyion)
     # Derived parameters
     alpha = vars[1]    
     sigA = 1 - alpha
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(wA*z)
 
-    return sqrt(4*π*lB*(phiPF/wP + phiM/wM + sigA*phiA/wA))
+    return sqrt(4*π*lB*(z^2*(phiPF/wP + phiM/wM) + sigA*phiA/wA))
 end
 
 function kbar(phi, vars, model::SymmetricCoacervate)
@@ -45,7 +45,7 @@ function kbar(phi, vars, model::SymmetricCoacervate)
     sig = model.sig
     lB = model.lB
 
-    return sqrt(4*π*lB*(sig*phiP/wP + phiS/wS))
+    return sqrt(4*π*lB*(sig*phiP/wP + z^2*phiS/wS))
 end
 
 function kbar(phi, vars, model::AsymmetricCoacervate)
@@ -54,7 +54,7 @@ function kbar(phi, vars, model::AsymmetricCoacervate)
     sigA, sigC = model.sig
     lB = model.lB
 
-    return sqrt(4*π*lB*(sigA*phiA/wA + sigC*phiC/wC + phiP/wP + phiM/wM))
+    return sqrt(4*π*lB*(sigA*phiA/wA + sigC*phiC/wC + z^2*(phiP/wP + phiM/wM)))
 end
 
 function kbar(phi, vars, model::AssociationCoacervate)
@@ -67,10 +67,10 @@ function kbar(phi, vars, model::AssociationCoacervate)
     alphaAP, alphaCM, betaA, betaC = vars
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - (alphaAP*phiA*wP)/wA
-    phiMF = phiM - (alphaCM*phiC*wM)/wC
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
 
-    return sqrt(4*π*lB*(sigA*phiA/wA + sigC*phiC/wC + phiPF/wP + phiMF/wM))
+    return sqrt(4*π*lB*(sigA*phiA/wA + sigC*phiC/wC + z^2*(phiPF/wP + phiMF/wM)))
 end
 
 #==============================================================================#
@@ -86,13 +86,13 @@ function kappa2(q, phi, vars, model::SinglePolyion)
     # Derived parameters
     alpha = vars[1]
     sigA = 1 - alpha
-    phiPF = phiP - alpha*phiA*wP/wA
+    phiPF = phiP - alpha*phiA*wP/(wA*z)
 
     smA, smP, smM = gamq.(q, model.smear)
     chain = chainstructs(model, vars)
     gA = gchain(q, chain)
 
-	return (4*pi*lB)*(phiM*smM^2/wM + phiPF*smP^2/wP + phiA*nA*sigA^2*smA^2*gA/wA)
+	return (4*pi*lB)*(z^2*(phiM*smM^2/wM + phiPF*smP^2/wP) + phiA*nA*sigA^2*smA^2*gA/wA)
 end
 
 function kappa2(q, phi, vars, model::SymmetricCoacervate)
@@ -107,7 +107,7 @@ function kappa2(q, phi, vars, model::SymmetricCoacervate)
     gP = gchain(q, chain)
 	smP, smS = gamq.(q, model.smear)
 
-	return (4*pi*lB)*(phiS*smS^2/wS + phiP*nP*sig^2*smP^2*gP/wP)
+	return (4*pi*lB)*(z^2*phiS*smS^2/wS + phiP*nP*sig^2*smP^2*gP/wP)
 end
 
 function kappa2(q, phi, vars, model::AsymmetricCoacervate)
@@ -122,7 +122,7 @@ function kappa2(q, phi, vars, model::AsymmetricCoacervate)
     gA, gC = gchain.(q, chains)
     smA, smC, smP, smM = gamq.(q, model.smear)
 
-	return (4*pi*lB)*(phiP*smP^2/wP + phiM*smM^2/wM + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
+	return (4*pi*lB)*(z^2*(phiP*smP^2/wP + phiM*smM^2/wM) + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
 end
 
 function kappa2(q, phi, vars, model::AssociationCoacervate)
@@ -135,12 +135,12 @@ function kappa2(q, phi, vars, model::AssociationCoacervate)
     alphaAP, alphaCM, betaA, betaC = vars
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - (alphaAP*phiA*wP)/wA
-    phiMF = phiM - (alphaCM*phiC*wM)/wC
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
 
     chains = chainstructs(model, vars)
     gA, gC = gchain.(q, chains)
     smA, smC, smP, smM = gamq.(q, model.smear)
 
-	return (4*pi*lB)*(phiPF*smP^2/wP + phiMF*smM^2/wM + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
+	return (4*pi*lB)*(z^2*(phiPF*smP^2/wP + phiMF*smM^2/wM) + phiA*nA*sigA^2*smA^2*gA/wA + phiC*nC*sigC^2*smC^2*gC/wC)
 end
