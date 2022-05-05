@@ -14,31 +14,33 @@ const TwoChainModel{TC <: AbstractChainStructure} =
     Union{AsymmetricCoacervate{TC}, AssociationCoacervate{TC}, SelfComplimentaryCoacervate{TC}}
 
 function neutralbulk(phi, model::TwoChainModel)
-    sigA0, sigC0 = model.sig
-    wA, wC, wP, wM = model.omega
-    wS = (wP+wM)/2.0
+    @unpack sig, omega, zP, zM = model
+    sigA0, sigC0 = sig
+    wA, wC, wP, wM = omega
+    wS = (zM*wP+zP*wM)/(zP + zM)
 
     phiPS = phi[3] * wP / wS
     phiMS = phi[3] * wM / wS
-    phiPC = sigA0 * phi[1] * wP / (wA*z)
-    phiMC = sigC0 * phi[2] * wM / (wC*z)
+    phiPC = sigA0 * phi[1] * wP / (wA*zP)
+    phiMC = sigC0 * phi[2] * wM / (wC*zM)
     
     return [phi[1], phi[2], phiPS + phiPC, phiMS + phiMC]
 end
 
 function differencebulk(phi, model)
     phiA, phiC, phiS = phi
-    wA, wC, wP, wM = model.omega
-    sigA, sigC = model.sig
+    @unpack omega, sig, zP, zM = model
+    wA, wC, wP, wM = omega
+    sigA, sigC = sig
 
     chargeA = sigA*phiA/wA
     chargeC = sigC*phiC/wC
-    diff = abs(chargeA - chargeC)/z
+    diff = abs(chargeA - chargeC)
 
     if chargeA > chargeC
-        return [phiA, phiC, phiS + wP*diff, phiS]
+        return [phiA, phiC, phiS + wP*diff/zP, phiS]
     else
-        return [phiA, phiC, phiS, phiS + wM*diff]
+        return [phiA, phiC, phiS, phiS + wM*diff/zM]
     end
 end
 
@@ -61,43 +63,81 @@ bndlminx(state::BinodalState, model::TwoChainModel) = [state.dense[1], state.den
 bndlsolvex(state::BinodalState, model::TwoChainModel) = [state.sup..., state.dense..., state.nu, get(state.props, :psi, 0.0)]
 
 function bndlscale!(x, model::TwoChainModel)
-    if length(x) == 4
-        logscale!(x)
-    elseif length(x) == 10
-        logscale!(x, 1:9)
-    end
-    return nothing
+
+    x0 = similar(x)
+    phiAS, phiCS, phiPS, phiMS, phiAC, phiCC, phiPC, phiMC, nu, psi = x
+    @unpack bulk = model
+    phiAB, phiCB, phiPB, phiMB = bulk
+    x0[1] = phiAS/phiAB
+    x0[2] = phiCS/phiCB
+    x0[3] = phiPS/(1 - phiAS - phiCS)
+    x0[4] = phiMS/(1 - phiAS - phiCS - phiPS)
+    x0[5] = (phiAC - phiAB)/(1 - phiAB)
+    x0[6] = (phiCC - phiCB)/(1 - phiAC - phiAB)
+    x0[7] = phiPC/(1 - phiAC - phiCC)
+    x0[8] = phiMC/(1 - phiAC - phiCC - phiPC)
+    x0[9] = nu
+    x0[10] = psi
+    xs = [logscale(x0[1:9]), x0[10]]
+
 end
 
-function bndlunscale!(x, model::TwoChainModel)
-    if length(x) == 4
-        logunscale!(x)
-    elseif length(x) == 10
-        logunscale!(x, 1:9)
-    end
-    return nothing
-end
+function bndlunscale!(xs, model::TwoChainModel)
 
+    x0 = [logunscale(xs[1:9]), x0[10]]
+    phiAS = phiAB*x0[1]
+    phiCS = phiCB*x0[2]
+    phiPS = (1 - phiAS - phiCS)*x0[3]
+    phiMS = (1 - phiAS - phiCS - phiPS)*x0[4]
+    phiAC = phiAB + (1 - phiAB)*x0[5]
+    phiCC = phiCB + (1 - phiAC - phiAB)*x0[6]
+    phiPC = (1 - phiAC - phiCC)*x0[7]
+    phiMS = (1 - phiAC - phiCC - phiPC)*x0[8]
+    nu = x0[9]
+    psi = x0[10]
+    x = [phiAS, phiCS, phiPS, phiMS, phiAC, phiCC, phiPC, phiMC, nu, psi]
+
+end
 
 function bndlstate(x, model::TwoChainModel)
     @assert length(x) == 4 || length(x) == 10 "Invalid number of parameters for binodal state. Requires (4, 10) for $(typeof(model))."
 
+    @unpack bulk = model
+    phiAB, phiCB, phiPB, phiMB = bulk
+
     if length(x) == 4
         phiAC, phiCC, phiWC, nu = x
-        phiAB, phiCB, phiPB, phiMB = model.bulk
-        phiWB = 1 - sum(model.bulk)
-        wA, wC, wP, wM = model.omega
-        sigA, sigC = model.sig
+        phiWB = 1 - sum(bulk)
+        @unpack omega, sig, zP, zM = model
+        wA, wC, wP, wM = omega
+        sigA, sigC = sig
+        zwsum = zM*wP+zP*wM
         
         # Derive dense phase params
-        phiPC = wP/(wP+wM) - wP*(phiAC + phiCC + phiWC)/(wP+wM) + sigA*phiAC*(wM*wP/(z*wA*(wP+wM))) - sigC*phiCC*(wM*wP/(z*wC*(wP+wM)))
+        ΔC = sigA*phiAC/wA - sigC*phiCC/zM
+        if ΔC >= 0
+            phiPC0 = ΔC*wP/zP
+            phiMC0 = 0
+        else
+            phiPC0 = 0
+            phiMC0 = -ΔC*wM/zM
+        end
+        phiPC = zM*wP/zwsum*(1 - (phiAC + phiCC + phiWC + phiPC0 + phiMC0)) + phiPC0
         phiMC = 1 - phiAC - phiCC - phiPC - phiWC
         
         # Derive supernatant phase params
         phiAS = (phiAB - nu*phiAC)/(1 - nu)
         phiCS = (phiCB - nu*phiCC)/(1 - nu)
         phiWS = (phiWB - nu*phiWC)/(1 - nu)
-        phiPS = wP/(wP+wM) - wP*(phiAS + phiCS + phiWS)/(wP+wM) + sigA*phiAS*(wM*wP/(z*wA*(wP+wM))) - sigC*phiCS*(wM*wP/(z*wC*(wP+wM)))
+        ΔS = sigA*phiAS/wA - sigC*phiCS/zM
+        if ΔS >= 0
+            phiPS0 = ΔS*wP/zP
+            phiMS0 = 0
+        else
+            phiPS0 = 0
+            phiMs0 = -ΔS*wM/zM
+        end
+        phiPS = zM*wP/zwsum*(1 - (phiAS + phiCS + phiWS + phiPS0 + phiMS0)) + phiPS0
         phiMS = 1 - phiAS - phiCS - phiPS - phiWS
 
         # Update state struct
@@ -107,7 +147,6 @@ function bndlstate(x, model::TwoChainModel)
         
         return BinodalState(bulk, sup, dense, nu)
     else
-        phiAB, phiCB, phiPB, phiMB = model.bulk
         phiAS, phiCS, phiPS, phiMS = x[1], x[2], x[3], x[4]
         phiAC, phiCC, phiPC, phiMC = x[5], x[6], x[7], x[8]
         nu, psi = x[9], x[10]
@@ -128,7 +167,8 @@ function bndlf!(F, xs, model::TwoChainModel; scaled::Bool = false)
     x = scaled ? bndlunscale(xs, model) : xs
 
     # Offload parameters
-    phiAB, phiCB, phiPB, phiMB = model.bulk
+    @unpack bulk, zP, zM = model
+    phiAB, phiCB, phiPB, phiMB = bulk
     phiAS, phiCS, phiPS, phiMS = x[1], x[2], x[3], x[4]
     phiAC, phiCC, phiPC, phiMC = x[5], x[6], x[7], x[8]
     nu, psi = x[9], x[10]
@@ -143,11 +183,11 @@ function bndlf!(F, xs, model::TwoChainModel; scaled::Bool = false)
 
     F[1] = muS[1] - muC[1] + sigA*psi/wA
     F[2] = muS[2] - muC[2] - sigC*psi/wC
-    F[3] = muS[3] - muC[3] - z*psi/wP
-    F[4] = muS[4] - muC[4] + z*psi/wM
+    F[3] = muS[3] - muC[3] - zP*psi/wP
+    F[4] = muS[4] - muC[4] + zM*psi/wM
     F[5] = pS - pC
-    F[6] = sigC*phiCS/wC - sigA*phiAS/wA + z*phiPS/wP - z*phiMS/wM
-    F[7] = sigC*phiCC/wC - sigA*phiAC/wA + z*phiPC/wP - z*phiMC/wM
+    F[6] = sigC*phiCS/wC - sigA*phiAS/wA + zP*phiPS/wP - zM*phiMS/wM
+    F[7] = sigC*phiCC/wC - sigA*phiAC/wA + zP*phiPC/wP - zM*phiMC/wM
     F[8] = phiAB - (1 - nu)*phiAS - nu*phiAC
     F[9] = phiCB - (1 - nu)*phiCS - nu*phiCC
     F[10] = phiPB - (1 - nu)*phiPS - nu*phiPC
@@ -164,6 +204,7 @@ function bndlj!(J, xs, model::TwoChainModel; scaled::Bool = false)
     phiAS, phiCS, phiPS, phiMS = x[1], x[2], x[3], x[4]
     phiAC, phiCC, phiPC, phiMC = x[5], x[6], x[7], x[8]
     nu, psi = x[9], x[10]
+    z = model.z
     
     sup = [phiAS, phiCS, phiPS, phiMS]
     coac = [phiAC, phiCC, phiPC, phiMC]

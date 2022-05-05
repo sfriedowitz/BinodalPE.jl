@@ -16,8 +16,6 @@ const b0 = sqrt(v0/(lB0/79.0))
 
 const lBbar = lB0/l0/79.0 # Reference value used as default
 
-const z = 2.0 # counterion valence, constant and =1 initially to test modifications
-
 #==============================================================================#
 # Mathematical functions
 #==============================================================================#

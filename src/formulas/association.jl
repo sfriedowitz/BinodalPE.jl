@@ -5,7 +5,8 @@
 function fcombinatorial(phi, vars, model::SinglePolyion)
     phiA = phi[1]
     alpha = vars[1]
-    wA = model.omega[1]
+    @unpack omega = model
+    wA = omega[1]
 
     return (phiA/wA)*(alpha*log(alpha) + (1-alpha)*log(1-alpha))
 end
@@ -13,7 +14,8 @@ end
 function fcombinatorial(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     alphaAP, alphaCM, betaA, betaC = vars
-    wA, wC, wP, wM = model.omega
+    @unpack omega = model
+    wA, wC, wP, wM = omega
 
     # Chain combinatorics terms
     fAP = (phiA/wA)*(alphaAP*log(alphaAP) + (1-alphaAP)*log(1-alphaAP))
@@ -23,7 +25,7 @@ function fcombinatorial(phi, vars, model::AssociationCoacervate)
     fBC = ((1-alphaCM)*phiC/wC)*(betaC*log(betaC) + (1-betaC)*log(1-betaC))
 
     # Bond volume factor
-    fD = -(betaC*(1-alphaCM)*phiC/wC)*log(phiC*betaC*(1-alphaCM)*(wA+wC)/(wC*exp(1.0)))
+    fD = -(betaC*(1-alphaCM)*phiC/wC)*log(phiC*betaC*(1-alphaCM)*(wA+wC)/wC)
 
     return fAP + fCM + fBA + fBC + fD
 end
@@ -35,8 +37,8 @@ end
 function fbinding(phi, vars, model::SinglePolyion)
     phiA = phi[1]
     alpha = vars[1]
-    wA = model.omega[1]
-    dg = model.dg
+    @unpack omega, dg = model
+    wA = omega[1]
 
     return (phiA/wA)*alpha*dg
 end
@@ -44,10 +46,11 @@ end
 function fbinding(phi, vars, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     alphaAP, alphaCM, betaA, betaC = vars
-    dgAP, dgCM, dgIP = model.dg
-    wA, wC, wP, wM = model.omega
+    @unpack dg, omega, zP, zM = model
+    dgAP, dgCM, dgIP = dg
+    wA, wC, wP, wM = omega
 
-    return (alphaAP*phiA*dgAP)/(wA*z) + (alphaCM*phiC*dgCM)/(wC*z) + (betaC*(1-alphaCM)*phiC*dgIP)/wC
+    return (alphaAP*phiA*dgAP)/(wA*zP) + (alphaCM*phiC*dgCM)/(wC*zM) + (betaC*(1-alphaCM)*phiC*dgIP)/wC
 end
 
 #==============================================================================#

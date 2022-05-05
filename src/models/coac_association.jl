@@ -26,6 +26,8 @@ mutable struct AssociationCoacervate{TC <: AbstractChainStructure} <: AbstractMo
     b        :: SVector{2,Float64}
     lp       :: SVector{2,Float64}
     lB       :: Float64
+    zP       :: Float64
+    zM       :: Float64
     vargs    :: Dict{Symbol,Any}
 end
 
@@ -38,10 +40,12 @@ function AssociationCoacervate(; structure::Type{<:AbstractChainStructure}, kwar
     b = get(kwargs, :b, [1.0, 1.0])
     lp = get(kwargs, :lp, [1.0, 1.0])
     lB = get(kwargs, :lB, lBbar)
+    zP = get(kwargs, :zP, 1.0)
+    zM = get(kwargs, :zM, 1.0)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = AssociationCoacervate{structure}(zeros(4), omega, smear, sig, dg, chi, dp, b, lp, lB, vargs)
+    model = AssociationCoacervate{structure}(zeros(4), omega, smear, sig, dg, chi, dp, b, lp, lB, zP, zM, vargs)
     return model
 end
 
@@ -73,13 +77,13 @@ end
 # Variational solver functions
 #==============================================================================#
 
-varscale(x, model::AssociationCoacervate) = [log(v/(1-v)) for v in x]
+varscale(x, model::AssociationCoacervate) = logscale(x)
 
-varunscale(x, model::AssociationCoacervate) = [exp(v)/(1 + exp(v)) for v in x]
+varunscale(x, model::AssociationCoacervate) = logunscale(x)
 
 function varscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
-    for i = 1:4; new[i] = log(x[i]/(1-x[i])); end
+    new[1:4] .= logscale(x[1:4])
     new[5] = log(x[5])
     new[6] = log(x[6])
     return new
@@ -87,7 +91,7 @@ end
 
 function varunscale(x, model::AssociationCoacervate{AdaptiveChain})
     new = similar(x)
-    for i = 1:4; new[i] = exp(x[i])/(1+exp(x[i]));  end
+    new[1:4] .= logunscale(x[1:4])
     new[5] = exp(x[5])
     new[6] = exp(x[6])
     return new
@@ -99,27 +103,29 @@ other_beta(phiA, phiC, wA, wC, alphaAP, alphaCM, betaA) = phiA*betaA*(1-alphaAP)
 
 function valid_variational(xs, phi, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
-    wA, wC, wP, wM = model.omega
+    @unpack omega, zP, zM = model
+    wA, wC, wP, wM = omega
     
     alphaAP = exp(xs[1]) / (1 + exp(xs[1]))
     alphaCM = exp(xs[2]) / (1 + exp(xs[2]))
     
-    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
-    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
+    phiPF = phiP - alphaAP*phiA*wP/(wA*zP)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*zM)
     
     return (0.0 < phiPF < 1.0) && (0.0 < phiMF < 1.0)   
 end
 
 function varinit(phi, model::AssociationCoacervate{TC}) where TC
     phiA, phiC, phiP, phiM = phi
-    wA, wC, wP, wM = model.omega
-    dgAP, dgCM, dgIP = model.dg
-    bA, bC = model.b
-    nA, nC = model.dp
+    @unpack omega, dg, b, dp, zP, zM = model
+    wA, wC, wP, wM = omega
+    dgAP, dgCM, dgIP = dg
+    bA, bC = b
+    nA, nC = dp
 
     mu_ap, mu_cm, mu_ip = muel_association(phi, [0.5, 0.5, 0.5, 0.5, bA, bC], model)
-    kAP = exp(-dgAP - z*mu_ap + 1)
-    kCM = exp(-dgCM - z*mu_cm + 1)
+    kAP = exp(-dgAP - zP*mu_ap + 1)
+    kCM = exp(-dgCM - zM*mu_cm + 1)
     kIP = exp(-dgIP - mu_ip + 1)
 
     # Guess for alphaAP
@@ -193,26 +199,26 @@ end
 
 function varf!(F, x, phi, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
-    wA, wC, wP, wM = model.omega
-    dgAP, dgCM, dgIP = model.dg
+    @unpack omega, dg, zP, zM = model
+    wA, wC, wP, wM = omega
+    dgAP, dgCM, dgIP = dg
    
     vars = varunscale(x, model)
     alphaAP, alphaCM, betaA, betaC = vars
 
-    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
-    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
+    phiPF = phiP - alphaAP*phiA*wP/(wA*zP)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*zM)
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
     
     # Electrostatic exchange potentials
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     
-    # these definions are functionally identical to F[1] and F[2], below, but cause the results to differ from the master code due to different groupings of floating point calcs.
-    #F[1] = log((alphaAP/sigA)^z/phiPF) + dgAP + z*mu_ap - 1
-    #F[2] = log((alphaCM/sigC)^z/phiMF) + dgCM + z*mu_cm - 1
-    F[1] = log(alphaAP^z/(sigA^z*phiPF)) + dgAP + z*mu_ap - 1
-    F[2] = log(alphaCM^z/(sigC^z*phiMF)) + dgCM + z*mu_cm - 1    
-    F[3] = log(exp(1.0) * (betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
+    F[1] = log((alphaAP/sigA)^zP/phiPF) + dgAP + zP*mu_ap - 1
+    F[2] = log((alphaCM/sigC)^zM/phiMF) + dgCM + zM*mu_cm - 1   
+    # really don't know why there is a random exp(1.0) here so im gonna take it out for now...
+    #F[3] = log(exp(1.0) * (betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
+    F[3] = log((betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
     F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
 
     return nothing
@@ -220,26 +226,27 @@ end
 
 function varf!(F, x, phi, model::AssociationCoacervate{AdaptiveChain})
     phiA, phiC, phiP, phiM = phi
-    wA, wC, wP, wM = model.omega
-    dgAP, dgCM, dgIP = model.dg
+    @unpack omega, dg, zP, zM = model
+    wA, wC, wP, wM = omega
+    dgAP, dgCM, dgIP = dg
 
     vars = varunscale(x, model)
     alphaAP, alphaCM, betaA, betaC, lpA, lpC = vars
 
     sigA = (1-alphaAP)*(1-betaA)
     sigC = (1-alphaCM)*(1-betaC)
-    phiPF = phiP - alphaAP*phiA*wP/(wA*z)
-    phiMF = phiM - alphaCM*phiC*wM/(wC*z)
+    phiPF = phiP - alphaAP*phiA*wP/(wA*zP)
+    phiMF = phiM - alphaCM*phiC*wM/(wC*zM)
     
     # Electrostatic exchange potentials
     mu_ap, mu_cm, mu_bc = muel_association(phi, vars, model)
     dfA, dfC = dftot_adaptive(phi, vars, model)
     
-    #F[1] = log((alphaAP/sigA)^z/phiPF) + dgAP + z*mu_ap - 1
-    #F[2] = log((alphaCM/sigC)^z/phiMF) + dgCM + z*mu_cm - 1
-    F[1] = log(alphaAP^z/(sigA^z*phiPF)) + dgAP + z*mu_ap - 1
-    F[2] = log(alphaCM^z/(sigC^z*phiMF)) + dgCM + z*mu_cm - 1    
-    F[3] = log((betaC*exp(1.0)*wA)/(1-betaC)/(sigA*phiA)/(wA+wC)) + dgIP + mu_bc - 1
+    F[1] = log((alphaAP/sigA)^zP/phiPF) + dgAP + zP*mu_ap - 1
+    F[2] = log((alphaCM/sigC)^zM/phiMF) + dgCM + zM*mu_cm - 1
+    # really don't know why there is a random exp(1.0) here so im gonna take it out for now...
+    #F[3] = log(exp(1.0) * (betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
+    F[3] = log((betaC/(1-betaC)) * (wA/(wA + wC)) / (sigA*phiA)) + dgIP + mu_bc - 1
     F[4] = phiA*betaA*(1-alphaAP)/wA - phiC*betaC*(1-alphaCM)/wC
     F[5] = dfA
     F[6] = dfC

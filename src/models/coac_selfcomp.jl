@@ -61,7 +61,7 @@ end
 #==============================================================================#
 
 function selfcompsolve(phi, model::SelfComplimentaryCoacervate)
-    # Analytically solution to the self-complimentary fraction
+    # Analytical solution to the self-complimentary fraction
     phiA = phi[1]
     wA = model.omega[1]
     fA = model.fA

@@ -5,6 +5,7 @@ module BinodalPE
 #==============================================================================#
 
 using Printf
+using UnPack
 using JSON
 using RecipesBase
 using DelimitedFiles
@@ -29,7 +30,7 @@ import SpecialFunctions: sinint
 
 # Types
 export AbstractChainStructure, ChainStructure
-export PointLike, ExtendedPoint, SmearedPoint, GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule
+export PointLike, ExtendedPoint, SmearedPoint, GaussianCoil, RodLike, WormLike, AdaptiveChain, SphericalGlobule, EdwardsCoil
 export AbstractModel, OneChainModel, TwoChainModel
 export SinglePolyion, SymmetricCoacervate, AsymmetricCoacervate, AssociationCoacervate, SelfComplimentaryCoacervate
 
@@ -43,6 +44,7 @@ export savebndl, readbndl, add_state!
 # Model methods
 export swap, swap!, valid, set_bulk!, newstate
 export ftotal, fideal, fexcess, f2total, f3total, mutotal, muexcess, pressure, mupressure
+export muel_association
 export ftranslational, fchi, felectrostatic, fcombinatorial, fbinding, fselfcomp
 export varinit, varsolve, varscale, varunscale, varf, varf!, varj!, varfj!, selfcompsolve
 

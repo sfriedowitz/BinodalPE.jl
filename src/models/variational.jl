@@ -14,14 +14,14 @@ varinit(phi, model::AbstractModel) = notimpl("varinit", typeof(model))
 
 Rescale variational parameters, by default according to x -> log(x/(1-x))
 """
-varscale(x, model::AbstractModel) = [log(xi/(1-xi)) for xi in x]
+varscale(x, model::AbstractModel) = logscale(x)
 
 """
     varunscale(x, model)
 
 Rescale variational parameters, by default according to x -> exp(x)/(1 + exp(x))
 """
-varunscale(x, model::AbstractModel) = [exp(xi)/(1 + exp(xi)) for xi in x]
+varunscale(x, model::AbstractModel) = logunscale(x)
 
 #==============================================================================#
 
@@ -98,6 +98,9 @@ function varsolve(phi, model::AbstractModel;
     # Internal solver routine after setup
     sol = _newton_solve(df, x0, iterations, convert(TF, xtol), convert(TF, ftol), convert(TF, rlxn), convert(TF, pmax),
                         store_trace, show_trace, extended_trace, linesearch, linsolve)
+
+    # check for convergence
+    (sol.residual_norm <= ftol && !isnan(sol.residual_norm)) || println("varsolve not converged for phi = $phi with $(typeof(model)), f(x) = $(sol.residual_norm) ")
 
     return varunscale(sol.zero, model)
 end

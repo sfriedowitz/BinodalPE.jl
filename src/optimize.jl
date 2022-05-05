@@ -66,41 +66,116 @@ Keword arguments:
 * `extended_trace` : Print extended trace if `show_trace` is true (false)
 * `linesearch`     : Linesearch method from `LineSearches.jl` to use in solver (BackTracking(order = 3))
 """
-function bndlsolve(init::AbstractVector, model::AbstractModel;
-    tf::Type{TF} = Float64, 
+# function bndlsolve(init::AbstractVector, model::AbstractModel;
+#     tf::Type{TF} = Float64, 
+#     iterations::Integer = 50,
+#     xtol::Real = 0.0,
+#     ftol::Real = 1e-10,
+#     rlxn::Real = 1.0,
+#     pmax::Real = Inf,
+#     scale::Bool = true,
+#     show_trace::Bool = false,
+#     extended_trace::Bool = false,
+#     autodiff::Symbol = :auto,
+#     linesearch = LineSearches.Static()
+# ) where {TF <: Real}
+
+#     # Initial vectors
+#     x0 = convert(Vector{TF}, copy(init))
+#     if scale; bndlscale!(x0, model); end
+#     F0 = similar(x0)
+
+#     f!(F, x) = bndlf!(F, x, model; scaled = scale)
+#     j!(J, x) = bndlj!(J, x, model; scaled = scale)
+#     fj!(F, J, x) = bndlfj!(F, J, x, model; scaled = scale)
+#     if autodiff == :finite
+#         df = OnceDifferentiable(f!, x0, F0, autodiff = autodiff)
+#     else
+#         df = OnceDifferentiable(f!, j!, fj!, x0, F0)
+#     end
+
+#     # Internal solver routine after setup
+#     sol = _newton_solve(df, x0, iterations, xtol, ftol, rlxn, pmax, false, show_trace, extended_trace, linesearch)
+#     #sol = nlsolve(df, x0, method = :trust_region, iterations = iterations, ftol = ftol, xtol = xtol, show_trace = show_trace, extended_trace = extended_trace, linesearch = linesearch)
+
+#     # State and results
+#     xsol = bndlunscale(copy(sol.zero), model)
+#     return BinodalResults(xsol, copy(model.bulk), bndlstate(xsol, model), sol.iterations, sol.residual_norm, sol.f_converged)
+# end
+
+function bndlsolve(init::AbstractVector, model::SymmetricCoacervate; 
     iterations::Integer = 50,
     xtol::Real = 0.0,
     ftol::Real = 1e-10,
-    rlxn::Real = 1.0,
-    pmax::Real = Inf,
     scale::Bool = true,
     show_trace::Bool = false,
+    store_trace::Bool = false,
     extended_trace::Bool = false,
-    autodiff::Symbol = :auto,
-    linesearch = LineSearches.Static()
-) where {TF <: Real}
+    autodiff::Symbol = :finite,
+    maxrand::Integer = 0,
+    print_error::Bool = false
+)
+   
+    # unpack parameter values from model
+    phiPB, phiSB = model.bulk
+        
+    # scale initial guess if neccesary
+    xs = scale ? bndlscale(init, model) : init
+    
+    # create objective function for solver
+    f!(F, xs) = bndlf!(F, xs, model, scaled = true)
+    
+    # loop counter
+    count = -1
+    
+    # Store BinodalResult, initially nothing
+    res = nothing
 
-    # Initial vectors
-    x0 = convert(Vector{TF}, copy(init))
-    if scale; bndlscale!(x0, model); end
-    F0 = similar(x0)
+    # Allocate vector for objective function output
+    Ftest = similar(init)
+    
+    while count < maxrand
+    
+        # call NLsolve with objective function
+        try
+            sol = nlsolve(f!, xs,
+            autodiff = autodiff,
+            xtol = xtol, 
+            ftol = ftol, 
+            iterations = iterations, 
+            store_trace = store_trace, 
+            show_trace = show_trace, 
+            extended_trace = extended_trace
+            )
 
-    f!(F, x) = bndlf!(F, x, model; scaled = scale)
-    j!(J, x) = bndlj!(J, x, model; scaled = scale)
-    fj!(F, J, x) = bndlfj!(F, J, x, model; scaled = scale)
-    if autodiff == :finite
-        df = OnceDifferentiable(f!, x0, F0, autodiff = autodiff)
-    else
-        df = OnceDifferentiable(f!, j!, fj!, x0, F0)
+            # unscale solution
+            xsol = bndlunscale(sol.zero, model)
+            phiPC = xsol[3]
+
+            # store BinodalResults and break loop if converged
+            if converged(sol) && abs(phiPC - phiPB) > 1e-4
+                res = BinodalResults(xsol, copy(model.bulk), bndlstate(xsol, model), sol.iterations, sol.residual_norm, sol.f_converged)
+                break
+            end
+
+        catch e
+            print_error && println(e)
+        end
+        
+        #count += 1
+        #println("initial guess produced an error or failed to converge, trying up to $(maxrand-count) more random initial guesses")
+        Ftest[:] .= NaN
+        while any(isnan.(Ftest)) && count < maxrand
+            count += 1
+            xs = logscale(rand(5))
+            f!(Ftest,xs)
+        end
+        
     end
-
-    # Internal solver routine after setup
-    sol = _newton_solve(df, x0, iterations, xtol, ftol, rlxn, pmax, false, show_trace, extended_trace, linesearch)
-    #sol = nlsolve(df, x0, method = :trust_region, iterations = iterations, ftol = ftol, xtol = xtol, show_trace = show_trace, extended_trace = extended_trace, linesearch = linesearch)
-
-    # State and results
-    xsol = bndlunscale(copy(sol.zero), model)
-    return BinodalResults(xsol, copy(model.bulk), bndlstate(xsol, model), sol.iterations, sol.residual_norm, sol.f_converged)
+    
+    # return result (nothing if not converged)
+    return res
+    
 end
 
 #==============================================================================#

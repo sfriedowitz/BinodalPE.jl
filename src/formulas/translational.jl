@@ -11,10 +11,11 @@ function ftranslational(phi, vars, model::SinglePolyion)
     phiA, phiP, phiM = phi
     phiW = 1-sum(phi)
     alpha = vars[1]
-    wA, wP, wM = model.omega
-    nA = model.dp
+    @unpack omega, dp, zP = model
+    wA, wP, wM = omega
+    nA = dp
 
-    phiPF = phiP - alpha*phiA*wP/(wA*z)
+    phiPF = phiP - alpha*phiA*wP/(wA*zP)
 
     return (phiA/wA/nA)*log(phiA) + (phiPF/wP)log(phiPF) + (phiM/wM)*log(phiM) + phiW*log(phiW)
 end
@@ -22,16 +23,18 @@ end
 function ftranslational(phi, model::SymmetricCoacervate)
     phiP, phiS = phi
     phiW = 1-sum(phi)
-    wP, wS = model.omega
-    nP = model.dp
+    @unpack omega, dp = model
+    wP, wS = omega
+    nP = dp
     return (phiP/wP/nP)*log(phiP) + (phiS/wS)*log(phiS) + phiW*log(phiW)
 end
 
 function ftranslational(phi, model::AsymmetricCoacervate)
     phiA, phiC, phiM, phiP = phi
     phiW = 1-sum(phi)
-    wA, wC, wP, wM = model.omega
-    nA, nC = model.dp
+    @unpack omega, dp = model
+    wA, wC, wP, wM = omega
+    nA, nC = dp
 
     ftrans = (phiA/wA/nA)*log(phiA) + (phiC/wC/nC)*log(phiC)
     ftrans += (phiP/wP)*log(phiP) + (phiM/wM)*log(phiM)
@@ -51,12 +54,13 @@ function ftranslational(phi, assoc, model::AssociationCoacervate)
     phiA, phiC, phiP, phiM = phi
     phiW = 1-sum(phi)
     alphaAP, alphaCM, betaA, betaC = assoc
-    wA, wC, wP, wM = model.omega
-    nA, nC = model.dp
+    @unpack omega, dp, zP, zM = model
+    wA, wC, wP, wM = omega
+    nA, nC = dp
 
     # Association adjusted fractions
-    phiPF = phiP - (alphaAP*phiA*wP)/(wA*z)    
-    phiMF = phiM - (alphaCM*phiC*wM)/(wC*z)
+    phiPF = phiP - (alphaAP*phiA*wP)/(wA*zP)
+    phiMF = phiM - (alphaCM*phiC*wM)/(wC*zM)
     phiAB = phiA
     phiCB = phiC
 

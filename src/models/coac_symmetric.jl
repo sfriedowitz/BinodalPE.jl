@@ -13,6 +13,8 @@ mutable struct SymmetricCoacervate{TC <: AbstractChainStructure} <: AbstractMode
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
+    zP     :: Float64
+    zM     :: Float64
     vargs  :: Dict{Symbol,Any}
 end
 
@@ -24,10 +26,12 @@ function SymmetricCoacervate(; structure::Type{<:AbstractChainStructure}, kwargs
     b = get(kwargs, :b, 1.0)
     lp = get(kwargs, :lp, 1.0)
     lB = get(kwargs, :lB, lBbar)
+    zP = get(kwargs, :zP, 1.0)
+    zM = get(kwargs, :zM, 1.0)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = SymmetricCoacervate{structure}(zeros(2), omega, smear, sig, chi, dp, b, lp, lB, vargs)
+    model = SymmetricCoacervate{structure}(zeros(2), omega, smear, sig, chi, dp, b, lp, lB, zP, zM, vargs)
     return model
 end
 
@@ -52,17 +56,43 @@ bndlminx(state::BinodalState, model::SymmetricCoacervate) = [state.dense..., sta
 
 bndlsolvex(state::BinodalState, model::SymmetricCoacervate) = [state.sup..., state.dense..., state.nu]
 
-bndlscale!(x, model::SymmetricCoacervate) = logscale!(x)
+function bndlscale!(x, model::SymmetricCoacervate)
 
-bndlunscale!(x, model::SymmetricCoacervate) = logunscale!(x)
+    phiPS, phiSS, phiPC, phiSC, nu = x
+    @unpack bulk = model
+    phiPB, phiSB = bulk
+    x[1] = phiPS/phiPB
+    x[2] = phiSS/(1 - phiPS)
+    x[3] = (phiPC - phiPB)/(1 - phiPB)
+    x[4] = phiSC/(1 - phiPC)        
+    x[5] = nu
+    logscale!(x)
+
+end
+
+function bndlunscale!(xs, model::SymmetricCoacervate)
+
+    logunscale!(xs)
+    @unpack bulk = model
+    phiPB, phiSB = bulk
+    phiPS = phiPB*xs[1]
+    phiSS = (1 - phiPS)*xs[2]    
+    phiPC = phiPB + (1 - phiPB)*xs[3]
+    phiSC = (1 - phiPC)*xs[4]
+    nu = xs[5]
+    xs .= [phiPS, phiSS, phiPC, phiSC, nu]
+
+end
 
 function bndlstate(x, model::SymmetricCoacervate)
     @assert length(x) == 3 || length(x) == 5 "Invalid number of parameters for binodal state. Requires (3, 5) for $(typeof(model))."
 
+    @unpack bulk = model
+    phiPB, phiSB = bulk
+
     if length(x) == 3
         phiPC, phiSC, nu = x
-        phiPB, phiSB = model.bulk
-        phiWB = 1 - sum(model.bulk)
+        phiWB = 1 - sum(bulk)
 
         # Get supernatant parameters
         phiPS = (phiPB - nu*phiPC)/(1 - nu)
@@ -75,7 +105,6 @@ function bndlstate(x, model::SymmetricCoacervate)
 
         return BinodalState(bulk, sup, dense, nu)
     else
-        phiPB, phiSB = model.bulk
         phiPS, phiSS, phiPC, phiSC, nu = x
 
         bulk = @SVector [phiPB, phiSB]
@@ -91,7 +120,8 @@ function bndlf!(F, xs, model::SymmetricCoacervate; scaled::Bool = false)
     x = scaled ? bndlunscale(xs, model) : xs
 
     # Offload parameters
-    phiPB, phiSB = model.bulk
+    @unpack bulk = model
+    phiPB, phiSB = bulk
     phiPS, phiSS, phiPC, phiSC, nu = x
     
     sup = @SVector [phiPS, phiSS]   

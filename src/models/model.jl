@@ -136,20 +136,10 @@ function f3total(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDi
 end
 
 function mutotal(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))
-    # # Without scaling procedure
-    # gx = x -> ftotal(x, model)
-    # cfg = ForwardDiff.GradientConfig(gx, phi, chunk)
-    # return ForwardDiff.gradient(gx, phi, cfg)
-
-    # With variable scaling
-    xs = logscale(phi)
-    fx = x -> ftotal(logunscale(x), model)
-
-    cfg = ForwardDiff.GradientConfig(fx, xs, chunk)
-    g = ForwardDiff.gradient(fx, xs, cfg)
-
-    dx = @. 1/(phi - phi^2)
-    return g .* dx
+    # Without scaling procedure
+    gx = x -> ftotal(x, model)
+    cfg = ForwardDiff.GradientConfig(gx, phi, chunk)
+    return ForwardDiff.gradient(gx, phi, cfg)
 end
 
 function muideal(phi, model::AbstractModel; chunk::ForwardDiff.Chunk = ForwardDiff.Chunk(phi))

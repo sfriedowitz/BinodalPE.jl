@@ -11,7 +11,8 @@ end
 function fchi(phi, model::TwoChainModel)
 	phiA, phiC = phi[1], phi[2]
 	phiW = 1-sum(phi)
-	chiAW, chiCW, chiAC = model.chi
+	@unpack chi = model
+	chiAW, chiCW, chiAC = chi
 
 	return chiAW*phiA*phiW + chiCW*phiC*phiW + chiAC*phiA*phiC
 end

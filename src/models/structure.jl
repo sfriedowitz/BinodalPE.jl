@@ -18,6 +18,9 @@ abstract type RodLike <: AbstractChainStructure end
 abstract type WormLike <: AbstractChainStructure end
 abstract type AdaptiveChain <: AbstractChainStructure end
 abstract type SphericalGlobule <: AbstractChainStructure end
+
+# temporary type for f_el using Edwards kernel and without smearing
+abstract type EdwardsCoil <: AbstractChainStructure end
  
 #==============================================================================#
 

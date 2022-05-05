@@ -19,6 +19,8 @@ mutable struct SinglePolyion{TC <: AbstractChainStructure} <: AbstractModel{TC}
     b      :: Float64
     lp     :: Float64
     lB     :: Float64
+    zP     :: Float64
+    zM     :: Float64
     vargs  :: Dict{Symbol,Any}
 end
 
@@ -31,10 +33,12 @@ function SinglePolyion(; structure::Type{<:AbstractChainStructure}, kwargs...)
     b = get(kwargs, :b, 1.0)
     lp = get(kwargs, :lp, 1.0)
     lB = get(kwargs, :lB, lBbar)
+    zP = get(kwargs, :zP, 1.0)
+    zM = get(kwargs, :zM, 1.0)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = SinglePolyion{structure}(zeros(3), omega, smear, sig, dg, chi, dp, b, lp, lB, vargs)
+    model = SinglePolyion{structure}(zeros(3), omega, smear, sig, dg, chi, dp, b, lp, lB, zP, zM, vargs)
     return model
 end
 
@@ -45,10 +49,10 @@ chainstructs(model::SinglePolyion{TC}) where TC = ChainStructure{TC, typeof(mode
 chainstructs(model::SinglePolyion{AdaptiveChain}, vars) = ChainStructure{AdaptiveChain, eltype(vars)}(model.omega[1], model.dp, model.b, vars[2])
 
 function neutralbulk(phi, model::SinglePolyion)
-    sig = model.sig
-    wA, wP, wM = model.omega
+    @unpack sig, omega, zP = model
+    wA, wP, wM = omega
     
-    counter = sig * phi[1] * wP / (wA*z)
+    counter = sig * phi[1] * wP / (wA*zP)
     return [phi[1], phi[2] + counter, phi[2]]
 end
 
@@ -70,34 +74,32 @@ end
 
 function varscale(x, model::SinglePolyion{AdaptiveChain})
     new = similar(x)
-    new[1] = log(x[1]/(1 - x[1]))
+    new[1] = logscale(x[1])
     new[2] = log(x[2])
     return new
 end
 
 function varunscale(x, model::SinglePolyion{AdaptiveChain})
     new = similar(x)
-    new[1] = exp(x[1])/(1 + exp(x[1]))
+    new[1] = logunscale(x[1])
     new[2] = exp(x[2])
     return new
 end
 
 function varinit(phi, model::SinglePolyion)
     phiA, phiP, phiM = phi
-    dg = model.dg
-    b = model.b
+    @unpack dg, b, zP = model
 
+    # effective equilibrium constant
     muel = muel_association(phi, [0.5, 2.5], model)
-    kA = exp(-dg - z*muel + 1)
+    kA = exp(-dg - zP*muel + 1)
 
-    if phiP < 1e-10 # To avoid roundoff error
-        alpha0 = phiP*kA - 2*(phiP*kA)^2
-    else
-        inner = 1 + kA^2*(phiA-phiP)^2 + 2*kA*(phiA+phiP)
-        quad = inner < 0 ? 1 : sqrt(inner)
-        alpha0 = 0.5 + 0.5/(kA*phiA) + phiP/(2*phiA) - quad/(2*kA*phiA)
-    end
-    alpha0 = clamp(alpha0, 1e-10, 0.95)
+    # lumped constant for solution
+    inner = (kA*phiP)^(1/zP)
+    
+    alpha0 = inner < Inf ? inner/(1 + inner) : 1.0
+    
+    alpha0 = clamp(alpha0, 1e-10, 0.99)
     
     init = [alpha0]
     if isa(model, SinglePolyion{AdaptiveChain})
@@ -107,38 +109,39 @@ function varinit(phi, model::SinglePolyion)
     return init
 end
 
+
 #==============================================================================#
 
 function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion) where TF
     phiA, phiP, phiM = phi
-    wA, wP, wM = model.omega
-    dg = model.dg
+    @unpack omega, dg, zP = model
+    wA, wP, wM = omega
 
     alpha = exp(x[1])/ (1 + exp(x[1]))
-    phiPF = phiP - alpha*phiA*wP/(wA*z)
+    phiPF = phiP - alpha*phiA*wP/(wA*zP)
     sig = 1 - alpha
 
     muel = muel_association(phi, [alpha], model)
-    F[1] = log((alpha/(1-alpha))^z/phiPF) + dg + z*muel - 1
+    F[1] = log((alpha/sig)^zP/phiPF) + dg + zP*muel - 1
 
     return nothing
 end
 
 function varf!(F::AbstractVector{TF}, x, phi, model::SinglePolyion{AdaptiveChain}) where TF
     phiA, phiP, phiM = phi
-    wA, wP, wM = model.omega
-    dg = model.dg
+    @unpack omega, dg, zP = model
+    wA, wP, wM = omega
 
     vars = varunscale(x, model)
     alpha, _ = vars
 
-    phiPF = phiP - alpha*phiA*wP/(wA*z)
+    phiPF = phiP - alpha*phiA*wP/(wA*zP)
     sig = 1 - alpha
 
     muel = muel_association(phi, vars, model)
     dftot = dftot_adaptive(phi, vars, model)
 
-    F[1] = log((alpha/(1-alpha))^z/phiPF) + dg + z*muel - 1
+    F[1] = log((alpha/sig)^zP/phiPF) + dg + zP*muel - 1
     F[2] = dftot
 
     return nothing

@@ -13,6 +13,8 @@ mutable struct AsymmetricCoacervate{TC <: AbstractChainStructure} <: AbstractMod
     b      :: SVector{2,Float64}
     lp     :: SVector{2,Float64} # Only used if chain is WormLike
     lB     :: Float64
+    zP     :: Float64
+    zM     :: Float64
     vargs  :: Dict{Symbol,Any}
 end
 
@@ -24,10 +26,12 @@ function AsymmetricCoacervate(; structure::Type{<:AbstractChainStructure}, kwarg
     b = get(kwargs, :b, [1.0, 1.0])
     lp = get(kwargs, :lp, [1.0, 1.0])
     lB = get(kwargs, :lB, lBbar)
+    zP = get(kwargs, :zP, 1.0)
+    zM = get(kwargs, :zM, 1.0)
     vargs = get(kwargs, :vargs, Dict())
 
     smear = 0.5 .* omega .^ (1/3)
-    model = AsymmetricCoacervate{structure}(zeros(4), omega, smear, sig, chi, dp, b, lp, lB, vargs)
+    model = AsymmetricCoacervate{structure}(zeros(4), omega, smear, sig, chi, dp, b, lp, lB, zP, zM, vargs)
     return model
 end
 

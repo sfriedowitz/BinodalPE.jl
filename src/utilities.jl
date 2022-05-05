@@ -26,14 +26,14 @@ logscale(x::StaticArray) = @. log(x/(1-x))
 
 function logunscale!(x::AbstractArray, irange::AbstractUnitRange = eachindex(x))
 	for i in irange
-		x[i] = exp(x[i])/(1 + exp(x[i]))
+		x[i] = 1/(1 + exp(-x[i]))
 	end
 	return nothing
 end
 
 logunscale(x::AbstractArray, irange::AbstractUnitRange = eachindex(x)) = (new = copy(x); logunscale!(new, irange); new)
 
-logunscale(x::StaticArray) = @. exp(x)/(1 + exp(x))
+logunscale(x::StaticArray) = @. 1/(1 + exp(-x))
 
 #==============================================================================#
 
