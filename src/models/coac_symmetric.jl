@@ -134,6 +134,8 @@ function bndlf!(F, xs, model::SymmetricCoacervate; scaled::Bool = false)
     F[3] = pS - pC
     F[4] = phiPB - nu*phiPC - (1-nu)*phiPS
     F[5] = phiSB - nu*phiSC - (1-nu)*phiSS
+
+    F .+= exp(-1e10*(phiPC - phiPS)^(2))
     
     return nothing
 end

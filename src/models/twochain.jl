@@ -17,10 +17,10 @@ function neutralbulk(phi, model::TwoChainModel)
     @unpack sig, omega, zP, zM = model
     sigA0, sigC0 = sig
     wA, wC, wP, wM = omega
-    wS = (zM*wP+zP*wM)/(zP + zM)
+    wS = (zM*wP+zP*wM)
 
-    phiPS = phi[3] * wP / wS
-    phiMS = phi[3] * wM / wS
+    phiPS = phi[3] * wP * zM / wS
+    phiMS = phi[3] * wM * zP / wS
     phiPC = sigA0 * phi[1] * wP / (wA*zP)
     phiMC = sigC0 * phi[2] * wM / (wC*zM)
     
@@ -73,29 +73,31 @@ function bndlscale!(x, model::TwoChainModel)
     x0[3] = phiPS/(1 - phiAS - phiCS)
     x0[4] = phiMS/(1 - phiAS - phiCS - phiPS)
     x0[5] = (phiAC - phiAB)/(1 - phiAB)
-    x0[6] = (phiCC - phiCB)/(1 - phiAC - phiAB)
+    x0[6] = phiCC/(1 - phiAC)
     x0[7] = phiPC/(1 - phiAC - phiCC)
     x0[8] = phiMC/(1 - phiAC - phiCC - phiPC)
     x0[9] = nu
     x0[10] = psi
-    xs = [logscale(x0[1:9]), x0[10]]
+    x .= [logscale(x0[1:9])..., x0[10]]
 
 end
 
 function bndlunscale!(xs, model::TwoChainModel)
 
-    x0 = [logunscale(xs[1:9]), x0[10]]
+    @unpack bulk = model
+    phiAB, phiCB, phiPB, phiMB = bulk
+    x0 = [logunscale(xs[1:9])..., xs[10]]
     phiAS = phiAB*x0[1]
     phiCS = phiCB*x0[2]
     phiPS = (1 - phiAS - phiCS)*x0[3]
     phiMS = (1 - phiAS - phiCS - phiPS)*x0[4]
     phiAC = phiAB + (1 - phiAB)*x0[5]
-    phiCC = phiCB + (1 - phiAC - phiAB)*x0[6]
+    phiCC = (1 - phiAC)*x0[6]
     phiPC = (1 - phiAC - phiCC)*x0[7]
-    phiMS = (1 - phiAC - phiCC - phiPC)*x0[8]
+    phiMC = (1 - phiAC - phiCC - phiPC)*x0[8]
     nu = x0[9]
     psi = x0[10]
-    x = [phiAS, phiCS, phiPS, phiMS, phiAC, phiCC, phiPC, phiMC, nu, psi]
+    xs .= [phiAS, phiCS, phiPS, phiMS, phiAC, phiCC, phiPC, phiMC, nu, psi]
 
 end
 
@@ -191,6 +193,8 @@ function bndlf!(F, xs, model::TwoChainModel; scaled::Bool = false)
     F[8] = phiAB - (1 - nu)*phiAS - nu*phiAC
     F[9] = phiCB - (1 - nu)*phiCS - nu*phiCC
     F[10] = phiPB - (1 - nu)*phiPS - nu*phiPC
+
+    F .+= exp(-1e10*((phiAC - phiAS)^(2) + (phiCC - phiCS)^(2)))
 
     return nothing
 end

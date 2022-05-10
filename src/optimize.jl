@@ -103,7 +103,7 @@ Keword arguments:
 #     return BinodalResults(xsol, copy(model.bulk), bndlstate(xsol, model), sol.iterations, sol.residual_norm, sol.f_converged)
 # end
 
-function bndlsolve(init::AbstractVector, model::SymmetricCoacervate; 
+function bndlsolve(init::AbstractVector, model::AbstractModel; 
     iterations::Integer = 50,
     xtol::Real = 0.0,
     ftol::Real = 1e-10,
@@ -120,7 +120,7 @@ function bndlsolve(init::AbstractVector, model::SymmetricCoacervate;
     phiPB, phiSB = model.bulk
         
     # scale initial guess if neccesary
-    xs = scale ? bndlscale(init, model) : init
+    xs = scale ? bndlscale(init, model) : copy(init)
     
     # create objective function for solver
     f!(F, xs) = bndlf!(F, xs, model, scaled = true)
@@ -153,7 +153,7 @@ function bndlsolve(init::AbstractVector, model::SymmetricCoacervate;
             phiPC = xsol[3]
 
             # store BinodalResults and break loop if converged
-            if converged(sol) && abs(phiPC - phiPB) > 1e-4
+            if converged(sol) #&& abs(phiPC - phiPB) > 1e-4
                 res = BinodalResults(xsol, copy(model.bulk), bndlstate(xsol, model), sol.iterations, sol.residual_norm, sol.f_converged)
                 break
             end
@@ -167,7 +167,7 @@ function bndlsolve(init::AbstractVector, model::SymmetricCoacervate;
         Ftest[:] .= NaN
         while any(isnan.(Ftest)) && count < maxrand
             count += 1
-            xs = logscale(rand(5))
+            xs = logscale(rand(length(xs)))
             f!(Ftest,xs)
         end
         

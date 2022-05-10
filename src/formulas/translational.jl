@@ -36,6 +36,8 @@ function ftranslational(phi, model::AsymmetricCoacervate)
     wA, wC, wP, wM = omega
     nA, nC = dp
 
+    any(phi .< 0) && println(phi)
+
     ftrans = (phiA/wA/nA)*log(phiA) + (phiC/wC/nC)*log(phiC)
     ftrans += (phiP/wP)*log(phiP) + (phiM/wM)*log(phiM)
     ftrans += phiW*log(phiW)
